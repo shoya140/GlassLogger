@@ -27,7 +27,7 @@ $adb root
 ### 3.Change permissions of /sys/... raw sensor data files.
 
 <pre>
-\#chmod 664 /sys/bus/i2c/devices/4-0035/proxraw
+#chmod 664 /sys/bus/i2c/devices/4-0035/proxraw
 -rw-rw-r-- system   system       4096 2013-11-04 10:05 proxraw
 </pre>
 
