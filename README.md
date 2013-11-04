@@ -31,6 +31,6 @@ $adb root
 -rw-rw-r-- system   system       4096 2013-11-04 10:05 proxraw
 </pre>
 
-### 4.Build GlassLogger.apk file and install to GoogleGlass
+### 4.Build GlassLogger.apk and install to GoogleGlass
 
 Please build the .apk file by eclipse or android stdio.
