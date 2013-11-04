@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import android.util.Log;
+public class IRSensorLogger{
 
-public class IRSensorLogger implements Runnable{
-
-    private String getIRSensorData() {
+    public String getIRSensorData() {
         String data = new String();
         try {
             Process process = Runtime.getRuntime().exec("cat /sys/bus/i2c/devices/4-0035/proxraw");
@@ -28,13 +26,6 @@ public class IRSensorLogger implements Runnable{
             throw new RuntimeException(e);
         }
         return data;
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            Log.v("ir-sensor", getIRSensorData());
-        }
     }
 
 }

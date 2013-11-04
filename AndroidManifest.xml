@@ -8,7 +8,8 @@
         android:minSdkVersion="14"
         android:targetSdkVersion="14" />
 
-<!--     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" /> -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_SUPERUSER" /> -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -24,6 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name="LoggerService" />
     </application>
 
 </manifest>
