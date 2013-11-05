@@ -31,7 +31,6 @@ public class LoggerService extends Service{
         super.onStartCommand(intent, flags, startId);
         isLogging = true;
         foregroundProcessing();
-        Toast.makeText(this, "Start recording", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 
@@ -76,7 +75,6 @@ public class LoggerService extends Service{
         mIRSensorLogger = null;
         isLogging = false;
         mThread.interrupt();
-        Toast.makeText(this, "Stop recording", Toast.LENGTH_SHORT).show();
     }
 
 }
