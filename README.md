@@ -1,16 +1,16 @@
 GlassLogger
 ===========
 
-the sensor logging app on google glass
+the sensor logging app on Google Glass
 
 ## Features
 
-* record raw infra red sensor data -> /sdcard/GlassLogger/\_TIMESTAMP\_ir.txt
+* record raw infrared sensor data -> /sdcard/GlassLogger/\_TIMESTAMP\_ir.txt
 
-## Instration
+## Installation
 
 ### 1.Set up android sdk on Linux
- 
+
 fastboot on MacOSX has some trouble and doesn't work.<br>
 Please download "adb" and "fastboot" commands and do path settiings on Linux.
 
@@ -24,6 +24,8 @@ $fastboot reboot
 $adb root
 </pre>
 
+You can download boot.img from [here]("https://developers.google.com/glass/downloads/system")
+
 ### 3.Change permissions of /sys/... raw sensor data files.
 
 <pre>
@@ -35,4 +37,4 @@ $su
 
 ### 4.Build GlassLogger.apk and install to GoogleGlass
 
-Please build the .apk file by eclipse or android stdio.
+Please build the .apk file by eclipse or android studio.
