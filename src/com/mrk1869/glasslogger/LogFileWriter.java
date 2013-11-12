@@ -34,6 +34,21 @@ public class LogFileWriter {
         String logString = timestamp + "\t" + string;
         this.writeString(logString);
     }
+    
+    public void writeACCdata(Long timestamp, float xVal, float yVal, float zVal) {
+        String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
+
+    public void writeRotationVectorData(Long timestamp, float xVal, float yVal, float zVal) {
+        String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
+    
+    public void writeGyroscopeData(Long timestamp, float xVal, float yVal, float zVal) {
+        String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
 
     public void writeString(String logdata) {
         if (mBufferedWriter != null) {
