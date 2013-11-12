@@ -30,11 +30,6 @@ public class LogFileWriter {
         mBufferedWriter = new BufferedWriter(mFileWriter, BUFFER_SIZE);
     }
     
-    public void writeIRSensorData(Long timestamp, String string){
-        String logString = timestamp + "\t" + string;
-        this.writeString(logString);
-    }
-    
     public void writeACCdata(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
@@ -47,6 +42,11 @@ public class LogFileWriter {
     
     public void writeGyroscopeData(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
+    
+    public void writeIRSensorData(Long timestamp, String string){
+        String logString = timestamp + "\t" + string;
         this.writeString(logString);
     }
 

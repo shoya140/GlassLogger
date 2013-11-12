@@ -18,22 +18,27 @@ import android.widget.Toast;
 public class LoggerService extends Service implements SensorEventListener{
 
     public static boolean isLogging = false;
-    private IRSensorLogger mIRSensorLogger;
+    
     private Thread irThread;
+    private IRSensorLogger mIRSensorLogger;
     private LogFileWriter irLogFileWriter;
-    private LogFileWriter accLogFileWriter;
-    private LogFileWriter rvLogFileWriter;
-    private LogFileWriter gsLogFileWriter;
     
     private SensorManager sensorManager;
+    
     private Sensor accSensor;
+    private LogFileWriter accLogFileWriter;
+    
     private Sensor rvSensor;
+    private LogFileWriter rvLogFileWriter;
+
     private Sensor gsSensor;
+    private LogFileWriter gsLogFileWriter;
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+    
     @Override
     public void onCreate() {
         super.onCreate();
@@ -64,9 +69,6 @@ public class LoggerService extends Service implements SensorEventListener{
 
         String logSessionFilePath = logSessionDirectoryPath.getAbsolutePath();
         
-        // IR sensor
-        irLogFileWriter = new LogFileWriter(logSessionFilePath+"_ir.txt");
-        
         // accelerometer
         accLogFileWriter = new LogFileWriter(logSessionFilePath+"_acc.txt");
         accSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
@@ -81,6 +83,9 @@ public class LoggerService extends Service implements SensorEventListener{
         gsLogFileWriter = new LogFileWriter(logSessionFilePath+"_gs.txt");
         gsSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE).get(0);
         sensorManager.registerListener(this, gsSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        
+        // IR sensor
+        irLogFileWriter = new LogFileWriter(logSessionFilePath+"_ir.txt");
         
         mIRSensorLogger = new IRSensorLogger();
         irThread = new Thread(){
@@ -99,21 +104,6 @@ public class LoggerService extends Service implements SensorEventListener{
         irThread.start();
     }
 
-    @Override
-    public void onDestroy() {
-        // save
-        accLogFileWriter.closeWriter();
-        rvLogFileWriter.closeWriter();
-        gsLogFileWriter.closeWriter();
-        irLogFileWriter.closeWriter();
-        
-        //Stop logging
-        sensorManager.unregisterListener(this);
-        mIRSensorLogger = null;
-        isLogging = false;
-        irThread.interrupt();
-        
-    }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         
@@ -154,4 +144,19 @@ public class LoggerService extends Service implements SensorEventListener{
         
     }
 
+    @Override
+    public void onDestroy() {
+        // save
+        accLogFileWriter.closeWriter();
+        rvLogFileWriter.closeWriter();
+        gsLogFileWriter.closeWriter();
+        irLogFileWriter.closeWriter();
+        
+        //Stop logging
+        sensorManager.unregisterListener(this);
+        mIRSensorLogger = null;
+        isLogging = false;
+        irThread.interrupt();        
+    }
+    
 }
