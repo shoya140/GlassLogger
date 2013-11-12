@@ -11,6 +11,7 @@ import android.content.Intent;
 public class MainActivity extends Activity{
 
     private Button startButton;
+    private Button monitoringButton;
     private Context mContext;
     LoggerService serviceBinder;
     IRSensorLogger irSensorLogger;
@@ -32,26 +33,32 @@ public class MainActivity extends Activity{
                 }
             }
         });
+        
+        monitoringButton = (Button)findViewById(R.id.monitoring_button);
+        monitoringButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MonitoringActivity.class);
+                startActivity(intent);                                
+            }
+        });
     }
     private void startRecording(){
-        if (isInstallationFinished()) {
-            if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
-                Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
-                mContext.startService(bindIndent);
-                startButton.setText("Stop recording");
-                startButton.setTextColor(0xcd2e2e);
-            }else{
-                Toast.makeText(getBaseContext(), "Error: Storage does not have enough space.", Toast.LENGTH_SHORT).show();
-            }
+        if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+            Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
+            mContext.startService(bindIndent);
+            startButton.setText("Stop recording");
+            startButton.setTextColor(0xffcd2e2e);
+        }else{
+            Toast.makeText(getBaseContext(), "Error: Storage does not have enough space.", Toast.LENGTH_SHORT).show();
         }
-        Toast.makeText(getBaseContext(), "Error: Permission denied.", Toast.LENGTH_SHORT).show();
     }
 
     private void stopRecording(){
         Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
         mContext.stopService(bindIndent);
         startButton.setText("Start recording");
-        startButton.setTextColor(0xffffff);
+        startButton.setTextColor(0xffffffff);
     }
 
     private boolean isServiceRunning(){
