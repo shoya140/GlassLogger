@@ -3,6 +3,8 @@ package com.mrk1869.glasslogger;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,6 +24,9 @@ public class MainActivity extends Activity{
 
     private boolean mJustSelected;
     private View backgroundView;
+    
+    private WakeLock wakeLock;
+    private PowerManager powerManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +113,9 @@ public class MainActivity extends Activity{
     private void startRecording(){
         if(isInstallationFinished()){
             if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                powerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
+                wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "GlassLogger");
+                wakeLock.acquire();
                 Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
                 mContext.startService(bindIndent);
             }else{
@@ -122,7 +129,7 @@ public class MainActivity extends Activity{
     private void stopRecording(){
         Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
         mContext.stopService(bindIndent);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        wakeLock.release();
     }
 
     private boolean isServiceRunning(){
