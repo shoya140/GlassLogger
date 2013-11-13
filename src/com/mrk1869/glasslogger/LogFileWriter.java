@@ -1,24 +1,23 @@
 package com.mrk1869.glasslogger;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import android.R.integer;
 import android.util.Log;
 
 public class LogFileWriter {
 
     private BufferedWriter mBufferedWriter = null;
-    private BufferedOutputStream mBufferedOutputStream = null;
     private File mFile;
     private FileWriter mFileWriter = null;
     private final int BUFFER_SIZE = 100;
+    private String fileName;
     
     public LogFileWriter(String filename) {
         this.mFile = new File(filename);
+        fileName = filename;
         if (mFile.exists()){
             mFile.delete();
         }
@@ -38,6 +37,11 @@ public class LogFileWriter {
 
     public void writeRotationVectorData(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
+    
+    public void writeQuaternionData(Long timestamp, float wVal, float xVal, float yVal, float zVal) {
+        String logString = timestamp + "\t" + wVal +"\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
     }
     
@@ -61,39 +65,12 @@ public class LogFileWriter {
         }
     }
 
-    public void writeBuffer(byte[] buffer) throws IOException {
-        if (mBufferedOutputStream != null) {
-            mBufferedOutputStream.write(buffer);
-            mBufferedOutputStream.flush();
-        } else {
-            throw new IOException();
-        }
-    }
-
-    public void writeBuffer(short[] buffer, int start, int num) throws IOException {
-        if (start < 0 || num < 0) {
-            Log.v(">>>>>>>>>>>>>", "LogfileWriter Error: start or num == 0!");
-            return;
-        }
-        if (start + num > buffer.length) {
-            Log.v(">>>>>>>>>>>>>",
-                    "LogfileWriter Error: Call to writeBuffer with invalid parameters! "
-                            + buffer.length + " " + start + " " + num);
-            return;
-        }
-        for (int i = 0; i < num; i++) {
-
-            mBufferedOutputStream.write(((buffer[start + i]) >> 8) & 0xFF);
-            mBufferedOutputStream.write((buffer[start + i]) & 0xFF);
-        }
-        mBufferedOutputStream.flush();
-    }
-
     public void closeWriter() {
-        Log.v(">>>>>>>>>>>>>", "logfilewriter-stop");
+        Log.v("Log file writer", "Finished writing to " + fileName);
         try {
             mBufferedWriter.flush();
             mBufferedWriter.close();
+            mBufferedWriter = null;
         } catch (IOException e) {
             e.printStackTrace();
         }

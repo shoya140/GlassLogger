@@ -3,10 +3,12 @@ package com.mrk1869.glasslogger;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.app.Activity;
@@ -20,15 +22,15 @@ public class MainActivity extends Activity{
     IRSensorLogger irSensorLogger;
 
     private boolean mJustSelected;
-    private View backgroundView;
+//    private View backgroundView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LinearLayout layout = new LinearLayout(this);
-        setContentView(layout);
-        backgroundView =  new View(this);
-        layout.addView(backgroundView);
+//        LinearLayout layout = new LinearLayout(this);
+//        setContentView(layout);
+//        backgroundView =  new View(this);
+//        layout.addView(backgroundView);
         mContext = getBaseContext();
     }
 
@@ -46,11 +48,11 @@ public class MainActivity extends Activity{
         if (isServiceRunning()) {
             startMenuItem.setVisible(false);
             stopMenuItem.setVisible(true);
-            backgroundView.setBackgroundColor(0xffcd2e2e);
+//            backgroundView.setBackgroundColor(0xff000000);
         }else{
             startMenuItem.setVisible(true);
             stopMenuItem.setVisible(false);
-            backgroundView.setBackgroundColor(0xff000000);
+//            backgroundView.setBackgroundColor(0xffcd2e2e);
         }
         return true;
     }
@@ -67,11 +69,11 @@ public class MainActivity extends Activity{
         switch (item.getItemId()) {
         case R.id.start_recording:
             startRecording();
-            backgroundView.setBackgroundColor(0xffcd2e2e);
+//            backgroundView.setBackgroundColor(0xff000000);
             mJustSelected = true;
             return false;
         case R.id.stop_recording:
-            backgroundView.setBackgroundColor(0xff000000);
+//            backgroundView.setBackgroundColor(0xffcd2e2e);
             stopRecording();
             mJustSelected = true;
             return false;
@@ -106,6 +108,7 @@ public class MainActivity extends Activity{
     private void startRecording(){
         if(isInstallationFinished()){
             if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
                 mContext.startService(bindIndent);
             }else{
@@ -119,14 +122,21 @@ public class MainActivity extends Activity{
     private void stopRecording(){
         Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
         mContext.stopService(bindIndent);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private boolean isServiceRunning(){
         return LoggerService.isLogging;
     }
     
+    @Override
+    protected void onPause() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        super.onPause();
+    }
+
     private boolean isInstallationFinished(){
-        // TODO: Check whether App has root access
+        //TODO Check whether App has root permission.
         return true;
     }
 }

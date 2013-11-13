@@ -147,10 +147,15 @@ public class MonitoringActivity extends Activity{
             public void run(){
                 while (isRunning) {
                     try {
-                        String logData = irSensorLogger.getIRSensorData();
-                        irValue = Float.valueOf(logData);
+                        Float logData = irSensorLogger.getIRSensorData();
+                        // DOCUMENT error code:
+                        // -1.0: permission denied.
+                        // -2.0: thread has just stopped.
+                        if (logData > 0.0f){
+                            irValue = logData;
+                        }
                     } catch (Exception e) {
-                        Log.v("IRSensorLogger", "stopped");
+                        Log.v("Monitoring Activity", "IRSensorLogger has some errors..");
                     }
                 }
             }

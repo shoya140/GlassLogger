@@ -4,10 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import android.util.Log;
+
 public class IRSensorLogger{
 
-    public String getIRSensorData() {
-        String data = new String();
+    public float getIRSensorData() {
         try {
             Process process = Runtime.getRuntime().exec("cat /sys/bus/i2c/devices/4-0035/proxraw");
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -19,13 +20,23 @@ public class IRSensorLogger{
             }
             reader.close();
             process.waitFor();
-            data = output.toString();
+            return Float.valueOf(output.toString());
         }catch (IOException e){
-            throw new RuntimeException(e);
+            // permission error
+            Log.v("IRSensor", "Permission error!");
+            return -1.0f;
         }catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            // finished sign
+            return -2.0f;
         }
-        return data;
+    }
+    
+    public boolean isInstallationFinished () {
+        Float res = this.getIRSensorData();
+        if (res == -1.0f){
+            return false;
+        }
+        return true;
     }
 
 }

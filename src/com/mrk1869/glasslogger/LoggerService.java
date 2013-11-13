@@ -12,6 +12,7 @@ import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.WindowManager;
 
 public class LoggerService extends Service implements SensorEventListener{
 
@@ -27,10 +28,11 @@ public class LoggerService extends Service implements SensorEventListener{
     private LogFileWriter accLogFileWriter;
     
     private Sensor rvSensor;
-    private LogFileWriter rvLogFileWriter;
+    private LogFileWriter rotationLogFileWriter;
+    private LogFileWriter quaternionLogFileWriter;
 
     private Sensor gsSensor;
-    private LogFileWriter gsLogFileWriter;
+    private LogFileWriter gyroLogFileWriter;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -73,28 +75,32 @@ public class LoggerService extends Service implements SensorEventListener{
         sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_FASTEST);
         
         // rotation vector
-        rvLogFileWriter = new LogFileWriter(logSessionFilePath+"_rv.txt");
+        rotationLogFileWriter = new LogFileWriter(logSessionFilePath+"_rotation.txt");
+        quaternionLogFileWriter = new LogFileWriter(logSessionFilePath+"_quaternion.txt");
         rvSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR).get(0);
         sensorManager.registerListener(this, rvSensor, SensorManager.SENSOR_DELAY_FASTEST);
         
         // gyroscope
-        gsLogFileWriter = new LogFileWriter(logSessionFilePath+"_gs.txt");
+        gyroLogFileWriter = new LogFileWriter(logSessionFilePath+"_gyro.txt");
         gsSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE).get(0);
         sensorManager.registerListener(this, gsSensor, SensorManager.SENSOR_DELAY_FASTEST);
         
         // IR sensor
         irLogFileWriter = new LogFileWriter(logSessionFilePath+"_ir.txt");
-        
-        mIRSensorLogger = new IRSensorLogger();
+        mIRSensorLogger = new IRSensorLogger();        
         irThread = new Thread(){
-            @Override
             public void run(){
                 while (isLogging) {
                     try {
-                        String logData = mIRSensorLogger.getIRSensorData();
-                        irLogFileWriter.writeIRSensorData(System.currentTimeMillis(), Float.valueOf(logData));
+                        Float logData = mIRSensorLogger.getIRSensorData();
+                        if (logData > 0.0f) {
+                            // DOCUMENT error code:
+                            // -1.0: permission denied.
+                            // -2.0: thread has just stopped.
+                            irLogFileWriter.writeIRSensorData(System.currentTimeMillis(), logData);
+                        }
                     } catch (Exception e) {
-                        Log.v("IRSensorLogger", "stopped");
+                        Log.v("LoggerService", "IRLogger has some error..");
                     }
                 }
             }
@@ -108,10 +114,11 @@ public class LoggerService extends Service implements SensorEventListener{
     }
     @Override
     public void onSensorChanged(SensorEvent event) {
+        Long timestamp = System.currentTimeMillis();
         switch (event.sensor.getType()) {
         case Sensor.TYPE_ACCELEROMETER:
             accLogFileWriter.writeACCdata(
-                    System.currentTimeMillis(), 
+                    timestamp, 
                     event.values[0], 
                     event.values[1],
                     event.values[2]
@@ -119,17 +126,25 @@ public class LoggerService extends Service implements SensorEventListener{
             break;
             
         case Sensor.TYPE_ROTATION_VECTOR:
-            rvLogFileWriter.writeACCdata(
-                    System.currentTimeMillis(), 
+            rotationLogFileWriter.writeRotationVectorData(
+                    timestamp, 
                     event.values[0], 
                     event.values[1],
                     event.values[2]
                             );
+            float[] quaternion = new float[4];
+            SensorManager.getQuaternionFromVector(quaternion, event.values);
+            quaternionLogFileWriter.writeQuaternionData(timestamp, 
+                    quaternion[0], 
+                    quaternion[1], 
+                    quaternion[2], 
+                    quaternion[3]
+                            );            
             break;
             
         case Sensor.TYPE_GYROSCOPE:
-            gsLogFileWriter.writeACCdata(
-                    System.currentTimeMillis(), 
+            gyroLogFileWriter.writeGyroscopeData(
+                    timestamp, 
                     event.values[0], 
                     event.values[1],
                     event.values[2]
@@ -139,15 +154,15 @@ public class LoggerService extends Service implements SensorEventListener{
         default:
             break;
         }
-        
     }
 
     @Override
     public void onDestroy() {
         // save
         accLogFileWriter.closeWriter();
-        rvLogFileWriter.closeWriter();
-        gsLogFileWriter.closeWriter();
+        rotationLogFileWriter.closeWriter();
+        quaternionLogFileWriter.closeWriter();
+        gyroLogFileWriter.closeWriter();
         irLogFileWriter.closeWriter();
         
         //Stop logging
