@@ -3,7 +3,6 @@ package com.mrk1869.glasslogger;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,15 +21,16 @@ public class MainActivity extends Activity{
     IRSensorLogger irSensorLogger;
 
     private boolean mJustSelected;
-//    private View backgroundView;
+    private View backgroundView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        LinearLayout layout = new LinearLayout(this);
-//        setContentView(layout);
-//        backgroundView =  new View(this);
-//        layout.addView(backgroundView);
+        LinearLayout layout = new LinearLayout(this);
+        setContentView(layout);
+        backgroundView =  new View(this);
+        layout.addView(backgroundView);
+        backgroundView.setBackgroundColor(0xff000000);
         mContext = getBaseContext();
     }
 
