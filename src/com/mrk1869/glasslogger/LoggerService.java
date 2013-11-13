@@ -12,8 +12,6 @@ import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.animation.RotateAnimation;
-import android.widget.Toast;
 
 public class LoggerService extends Service implements SensorEventListener{
 
@@ -94,7 +92,7 @@ public class LoggerService extends Service implements SensorEventListener{
                 while (isLogging) {
                     try {
                         String logData = mIRSensorLogger.getIRSensorData();
-                        irLogFileWriter.writeIRSensorData(System.currentTimeMillis(), logData);
+                        irLogFileWriter.writeIRSensorData(System.currentTimeMillis(), Float.valueOf(logData));
                     } catch (Exception e) {
                         Log.v("IRSensorLogger", "stopped");
                     }

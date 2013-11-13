@@ -107,7 +107,6 @@ public class MonitoringActivity extends Activity{
                     canvas.drawLine(mLastX, mLastValue, newX, v, paint);
                     mLastValue = v;
                     mLastX += mSpeed;
-                    Log.v("ir-data", String.valueOf(v));
                     invalidate();
                 }
             }

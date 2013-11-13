@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import android.R.integer;
 import android.util.Log;
 
 public class LogFileWriter {
@@ -45,8 +46,8 @@ public class LogFileWriter {
         this.writeString(logString);
     }
     
-    public void writeIRSensorData(Long timestamp, String string){
-        String logString = timestamp + "\t" + string;
+    public void writeIRSensorData(Long timestamp, float value){
+        String logString = timestamp + "\t" + value + "\n";
         this.writeString(logString);
     }
 
