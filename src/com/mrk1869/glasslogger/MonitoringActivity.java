@@ -6,9 +6,16 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 public class MonitoringActivity extends Activity{
 
@@ -16,8 +23,12 @@ public class MonitoringActivity extends Activity{
     private Thread mThread;
     private GraphView mGraphView;
     private boolean isRunning;
+    
+    private SensorManager sensorManager;
+    private Sensor accSensor;
+    private Float irValue;
 
-    private class GraphView extends View{
+    private class GraphView extends View implements SensorEventListener{
 
         private Bitmap  mBitmap;
         private Paint   mPaint = new Paint();
@@ -28,10 +39,10 @@ public class MonitoringActivity extends Activity{
         private float   mScale;
         private float   mYOffset;
         private float   mMaxX;
-        private float   mSpeed = 1.0f;
+        private float   mSpeed = 0.5f;
         private float   mWidth;
         private float   mHeight;
-        private float   defaultScale = 1.0f;
+        private float   defaultValue;
 
         public GraphView(Context context) {
             super(context);
@@ -52,7 +63,8 @@ public class MonitoringActivity extends Activity{
             mCanvas.setBitmap(mBitmap);
             mCanvas.drawColor(0xFF000000);
             mYOffset = h * 0.5f;
-            mScale = - (h * 0.5f * defaultScale);
+            defaultValue = irValue;
+            mScale = h * 0.5f * (1.0f/100.0f);
             mWidth = w;
             mHeight = h;
             if (mWidth < mHeight) {
@@ -69,16 +81,15 @@ public class MonitoringActivity extends Activity{
             synchronized (this) {
                 if (mBitmap != null) {
                     final Paint paint = mPaint;
-
                     if (mLastX >= mMaxX) {
                         mLastX = 0;
+                        defaultValue = irValue;
+                        Toast toast = Toast.makeText(getBaseContext(), String.valueOf(irValue), Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.RIGHT, 0, 0);
+                        toast.show();
                         final Canvas cavas = mCanvas;
-                        final float yoffset = mYOffset;
-                        final float maxx = mMaxX;
                         paint.setColor(0xFFAAAAAA);
                         cavas.drawColor(0xFF000000);
-                        cavas.drawLine(0, yoffset,      maxx, yoffset,      paint);
-                        Log.v("view", "update");
                     }
                     canvas.drawBitmap(mBitmap, 0, 0, null);
                 }
@@ -90,17 +101,27 @@ public class MonitoringActivity extends Activity{
                 if (mBitmap != null) {
                     final Canvas canvas = mCanvas;
                     final Paint paint = mPaint;
-                    
                     float newX = mLastX + mSpeed;
-                    final float v = mYOffset + value * mScale;
+                    final float v = mYOffset + (value - defaultValue) * mScale;
                     paint.setColor(mColors[0]);
                     canvas.drawLine(mLastX, mLastValue, newX, v, paint);
                     mLastValue = v;
                     mLastX += mSpeed;
-                    Log.v("ir-data", String.valueOf(value));
+                    Log.v("ir-data", String.valueOf(v));
                     invalidate();
                 }
             }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // TODO Auto-generated method stub
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // TODO Auto-generated method stub
+            updateView(irValue);
         }
 
     }
@@ -111,18 +132,24 @@ public class MonitoringActivity extends Activity{
         irSensorLogger = new IRSensorLogger();
         mGraphView = new GraphView(this);
         setContentView(mGraphView);
+        
+        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        accSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+        irValue = 0.0f;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        sensorManager.registerListener(mGraphView, accSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        
         mThread = new Thread(){
             @Override
             public void run(){
                 while (isRunning) {
                     try {
                         String logData = irSensorLogger.getIRSensorData();
-                        mGraphView.updateView(Float.parseFloat(logData));
+                        irValue = Float.valueOf(logData);
                     } catch (Exception e) {
                         Log.v("IRSensorLogger", "stopped");
                     }
@@ -131,10 +158,13 @@ public class MonitoringActivity extends Activity{
         };
         mThread.start();
         isRunning = true;
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
     protected void onPause() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        sensorManager.unregisterListener(mGraphView);
         isRunning = false;
         mThread.interrupt();
         super.onPause();
