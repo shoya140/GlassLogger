@@ -1,5 +1,8 @@
 package com.mrk1869.glasslogger;
 
+import java.util.ArrayList;
+
+import android.R.integer;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,6 +13,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,6 +32,8 @@ public class MonitoringActivity extends Activity{
     private SensorManager sensorManager;
     private Sensor accSensor;
     private Float irValue;
+    private SoundPool mSoundPool;
+    private int mSoundID;
 
     private class GraphView extends View implements SensorEventListener{
 
@@ -107,7 +114,7 @@ public class MonitoringActivity extends Activity{
                     canvas.drawLine(mLastX, mLastValue, newX, v, paint);
                     mLastValue = v;
                     mLastX += mSpeed;
-                    invalidate();
+                    invalidate();                    
                 }
             }
         }
@@ -142,9 +149,22 @@ public class MonitoringActivity extends Activity{
         super.onResume();
         sensorManager.registerListener(mGraphView, accSensor, SensorManager.SENSOR_DELAY_FASTEST);
         
+        // SE
+        mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        mSoundID = mSoundPool.load(getApplicationContext(), R.raw.chime, 0);
+        
         mThread = new Thread(){
             @Override
             public void run(){
+                
+                // peak detection
+                ArrayList<Float> irValues = new ArrayList<Float>();
+//                int FRAME = 3; // frame for peak detection |<--FRAME-->*peak*<--FRAME-->|
+//                int RANGE = 2; // RANGE = 2 #|<--RANGE-->*FRAME*<--RANGE-->|
+                Float PARAM_LOWPATH = 0.9f;
+                Float PARAM_THRESHOLD = 3.0f;
+                Float data_low = 0.0f;
+                
                 while (isRunning) {
                     try {
                         Float logData = irSensorLogger.getIRSensorData();
@@ -153,6 +173,45 @@ public class MonitoringActivity extends Activity{
                         // -2.0: thread has just stopped.
                         if (logData > 0.0f){
                             irValue = logData;
+                            
+                            // peak detection
+                            irValues.add(irValue);
+                            if (irValues.size() < 10) {
+                                continue;
+                            }
+                            irValues.remove(0);
+                            
+                            Float left = (irValues.get(0)+irValues.get(1)+irValues.get(2)+irValues.get(3))/4.0f;
+                            Float right = (irValues.get(5)+irValues.get(6)+irValues.get(7)+irValues.get(8))/4.0f;
+                            Float peak = irValues.get(4);
+                            
+                            if (left < peak && peak < right){
+                                continue;
+                            }
+                            if (left > peak && peak > left){
+                                continue;
+                            }
+                            
+                            Float peak_to_left = (float) Math.pow((peak-left)*(peak-left), 0.5);
+                            Float peak_to_right = (float) Math.pow((peak-right)*(peak-right), 0.5);
+                            Float left_to_right = (float) Math.pow((right-left)*(right-left), 0.5);
+                            
+                            if (peak_to_left < left_to_right || peak_to_right < left_to_right) {
+                                continue;
+                            }
+                            
+                            Float diff = (float) Math.pow(Math.pow(peak - (left+right)/2.0f, 2), 0.5);
+                            
+                            if (data_low == 0.0f){
+                                data_low = diff;
+                            }
+                            
+                            if (diff > data_low*PARAM_THRESHOLD) {
+                                mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
+                                Log.v("Monitoring Activity", "Blinked");
+                            }
+                            data_low = data_low*PARAM_LOWPATH + diff*(1-PARAM_LOWPATH);
+                            
                         }
                     } catch (Exception e) {
                         Log.v("Monitoring Activity", "IRSensorLogger has some errors..");
@@ -171,6 +230,7 @@ public class MonitoringActivity extends Activity{
         sensorManager.unregisterListener(mGraphView);
         isRunning = false;
         mThread.interrupt();
+        mSoundPool.release();
         super.onPause();
     }
 }
