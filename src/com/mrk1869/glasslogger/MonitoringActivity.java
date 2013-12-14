@@ -163,8 +163,8 @@ public class MonitoringActivity extends Activity{
 //                int RANGE = 2; // RANGE = 2 #|<--RANGE-->*FRAME*<--RANGE-->|
                 Float PARAM_LOWPATH = 0.9f;
                 Float PARAM_THRESHOLD = 3.0f;
-                Float data_low = 0.0f;
-                
+                Float data_low = 2.0f;
+                Long lastBlinkTimestamp = System.currentTimeMillis();
                 while (isRunning) {
                     try {
                         Float logData = irSensorLogger.getIRSensorData();
@@ -172,6 +172,7 @@ public class MonitoringActivity extends Activity{
                         // -1.0: permission denied.
                         // -2.0: thread has just stopped.
                         if (logData > 0.0f){
+                            Log.v("Monitoring Activity", "Blink-data_low:"+data_low);
                             irValue = logData;
                             
                             // peak detection
@@ -207,11 +208,15 @@ public class MonitoringActivity extends Activity{
                             }
                             
                             if (diff > data_low*PARAM_THRESHOLD) {
-                                mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
-                                Log.v("Monitoring Activity", "Blinked");
+                                Long blinkTimestamp = System.currentTimeMillis();
+                                if (blinkTimestamp > lastBlinkTimestamp + 500){
+                                    mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
+                                    Log.v("Monitoring Activity", "Blinked"+blinkTimestamp);
+                                }
+                                lastBlinkTimestamp = blinkTimestamp;
+                                continue;
                             }
-                            data_low = data_low*PARAM_LOWPATH + diff*(1-PARAM_LOWPATH);
-                            
+                            data_low = data_low*PARAM_LOWPATH + diff*(1-PARAM_LOWPATH);                            
                         }
                     } catch (Exception e) {
                         Log.v("Monitoring Activity", "IRSensorLogger has some errors..");
