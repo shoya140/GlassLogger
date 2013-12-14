@@ -161,9 +161,10 @@ public class MonitoringActivity extends Activity{
                 ArrayList<Float> irValues = new ArrayList<Float>();
 //                int FRAME = 3; // frame for peak detection |<--FRAME-->*peak*<--FRAME-->|
 //                int RANGE = 2; // RANGE = 2 #|<--RANGE-->*FRAME*<--RANGE-->|
-                Float PARAM_LOWPATH = 0.9f;
-                Float PARAM_THRESHOLD = 3.0f;
-                Float data_low = 2.0f;
+                Float irTHRESTOLD = 4.0f;
+//                Float PARAM_LOWPATH = 0.9f;
+//                Float PARAM_THRESHOLD = 3.0f;
+//                Float data_low = 2.0f;
                 Long lastBlinkTimestamp = System.currentTimeMillis();
                 while (isRunning) {
                     try {
@@ -172,7 +173,7 @@ public class MonitoringActivity extends Activity{
                         // -1.0: permission denied.
                         // -2.0: thread has just stopped.
                         if (logData > 0.0f){
-                            Log.v("Monitoring Activity", "Blink-data_low:"+data_low);
+//                            Log.v("Monitoring Activity", "Blink-data_low:"+data_low);
                             irValue = logData;
                             
                             // peak detection
@@ -203,20 +204,30 @@ public class MonitoringActivity extends Activity{
                             
                             Float diff = (float) Math.pow(Math.pow(peak - (left+right)/2.0f, 2), 0.5);
                             
-                            if (data_low == 0.0f){
-                                data_low = diff;
-                            }
+//                            if (data_low == 0.0f){
+//                                data_low = diff;
+//                            }
                             
-                            if (diff > data_low*PARAM_THRESHOLD) {
+                            
+                            if (diff > irTHRESTOLD){
                                 Long blinkTimestamp = System.currentTimeMillis();
                                 if (blinkTimestamp > lastBlinkTimestamp + 500){
                                     mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
                                     Log.v("Monitoring Activity", "Blinked"+blinkTimestamp);
                                 }
                                 lastBlinkTimestamp = blinkTimestamp;
-                                continue;
                             }
-                            data_low = data_low*PARAM_LOWPATH + diff*(1-PARAM_LOWPATH);                            
+                            
+//                            if (diff > data_low*PARAM_THRESHOLD) {
+//                                Long blinkTimestamp = System.currentTimeMillis();
+//                                if (blinkTimestamp > lastBlinkTimestamp + 500){
+//                                    mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
+//                                    Log.v("Monitoring Activity", "Blinked"+blinkTimestamp);
+//                                }
+//                                lastBlinkTimestamp = blinkTimestamp;
+//                                continue;
+//                            }
+//                            data_low = data_low*PARAM_LOWPATH + diff*(1-PARAM_LOWPATH);                            
                         }
                     } catch (Exception e) {
                         Log.v("Monitoring Activity", "IRSensorLogger has some errors..");
