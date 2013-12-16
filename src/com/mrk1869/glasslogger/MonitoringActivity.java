@@ -19,7 +19,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MonitoringActivity extends Activity{
@@ -32,6 +34,8 @@ public class MonitoringActivity extends Activity{
     private SensorManager sensorManager;
     private Sensor accSensor;
     private Float irValue;
+    private int blinkCount;
+    private TextView blinkCountTextView;
     private SoundPool mSoundPool;
     private int mSoundID;
 
@@ -106,6 +110,7 @@ public class MonitoringActivity extends Activity{
         public void updateView(float value) {
             synchronized (this) {
                 if (mBitmap != null) {
+                    blinkCountTextView.setText(String.valueOf(blinkCount));
                     final Canvas canvas = mCanvas;
                     final Paint paint = mPaint;
                     float newX = mLastX + mSpeed;
@@ -134,14 +139,21 @@ public class MonitoringActivity extends Activity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);        
+        super.onCreate(savedInstanceState);
+        
         irSensorLogger = new IRSensorLogger();
+        irValue = 0.0f;
+        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        accSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+        
         mGraphView = new GraphView(this);
         setContentView(mGraphView);
         
-        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        accSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
-        irValue = 0.0f;
+        View view = this.getLayoutInflater().inflate(R.layout.activity_monitoring, null);
+        addContentView(view,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
+        blinkCount = 0;
+        blinkCountTextView = (TextView)findViewById(R.id.countLabel);
+        blinkCountTextView.setText(String.valueOf(blinkCount));
     }
 
     @Override
@@ -162,9 +174,6 @@ public class MonitoringActivity extends Activity{
 //                int FRAME = 3; // frame for peak detection |<--FRAME-->*peak*<--FRAME-->|
 //                int RANGE = 2; // RANGE = 2 #|<--RANGE-->*FRAME*<--RANGE-->|
                 Float irTHRESTOLD = 4.0f;
-//                Float PARAM_LOWPATH = 0.9f;
-//                Float PARAM_THRESHOLD = 3.0f;
-//                Float data_low = 2.0f;
                 Long lastBlinkTimestamp = System.currentTimeMillis();
                 while (isRunning) {
                     try {
@@ -173,7 +182,6 @@ public class MonitoringActivity extends Activity{
                         // -1.0: permission denied.
                         // -2.0: thread has just stopped.
                         if (logData > 0.0f){
-//                            Log.v("Monitoring Activity", "Blink-data_low:"+data_low);
                             irValue = logData;
                             
                             // peak detection
@@ -203,31 +211,15 @@ public class MonitoringActivity extends Activity{
                             }
                             
                             Float diff = (float) Math.pow(Math.pow(peak - (left+right)/2.0f, 2), 0.5);
-                            
-//                            if (data_low == 0.0f){
-//                                data_low = diff;
-//                            }
-                            
-                            
                             if (diff > irTHRESTOLD){
                                 Long blinkTimestamp = System.currentTimeMillis();
                                 if (blinkTimestamp > lastBlinkTimestamp + 500){
+                                    blinkCount += 1;
                                     mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
                                     Log.v("Monitoring Activity", "Blinked"+blinkTimestamp);
                                 }
                                 lastBlinkTimestamp = blinkTimestamp;
                             }
-                            
-//                            if (diff > data_low*PARAM_THRESHOLD) {
-//                                Long blinkTimestamp = System.currentTimeMillis();
-//                                if (blinkTimestamp > lastBlinkTimestamp + 500){
-//                                    mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
-//                                    Log.v("Monitoring Activity", "Blinked"+blinkTimestamp);
-//                                }
-//                                lastBlinkTimestamp = blinkTimestamp;
-//                                continue;
-//                            }
-//                            data_low = data_low*PARAM_LOWPATH + diff*(1-PARAM_LOWPATH);                            
                         }
                     } catch (Exception e) {
                         Log.v("Monitoring Activity", "IRSensorLogger has some errors..");
