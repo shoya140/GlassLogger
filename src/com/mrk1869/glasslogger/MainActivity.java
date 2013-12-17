@@ -1,10 +1,17 @@
 package com.mrk1869.glasslogger;
 
+import java.util.Timer;
+
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,6 +22,7 @@ import android.widget.Toast;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
 public class MainActivity extends Activity{
 
@@ -27,6 +35,10 @@ public class MainActivity extends Activity{
     
     private WakeLock wakeLock;
     private PowerManager powerManager;
+    private boolean preferences_timer;
+    private GLCountDownTimer mTimer;
+    private SoundPool mSoundPool;
+    private int mSoundID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +49,16 @@ public class MainActivity extends Activity{
         layout.addView(backgroundView);
         backgroundView.setBackgroundColor(0xff000000);
         mContext = getBaseContext();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences_timer = sharedPreferences.getBoolean("timer", true);
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+        // SE
+        mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        mSoundID = mSoundPool.load(getApplicationContext(), R.raw.finished, 0);
         openOptionsMenu();
     }
 
@@ -53,11 +70,9 @@ public class MainActivity extends Activity{
         if (isServiceRunning()) {
             startMenuItem.setVisible(false);
             stopMenuItem.setVisible(true);
-//            backgroundView.setBackgroundColor(0xff000000);
         }else{
             startMenuItem.setVisible(true);
             stopMenuItem.setVisible(false);
-//            backgroundView.setBackgroundColor(0xffcd2e2e);
         }
         return true;
     }
@@ -74,17 +89,18 @@ public class MainActivity extends Activity{
         switch (item.getItemId()) {
         case R.id.start_recording:
             startRecording();
-//            backgroundView.setBackgroundColor(0xff000000);
             mJustSelected = true;
             return false;
         case R.id.stop_recording:
-//            backgroundView.setBackgroundColor(0xffcd2e2e);
             stopRecording();
             mJustSelected = true;
             return false;
         case R.id.monitoring:
-            Intent intent = new Intent(MainActivity.this, MonitoringActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MainActivity.this, MonitoringActivity.class));
+            mJustSelected = false;
+            return false;
+        case R.id.preferences:
+            startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
             mJustSelected = false;
             return false;
         }
@@ -118,6 +134,11 @@ public class MainActivity extends Activity{
                 wakeLock.acquire();
                 Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
                 mContext.startService(bindIndent);
+                if (preferences_timer){
+//                    mTimer = new GLCountDownTimer(300000, 0);
+                    mTimer = new GLCountDownTimer(310000, 310000);
+                    mTimer.start();
+                }
             }else{
                 Toast.makeText(getBaseContext(), "Error: Storage does not have enough space.", Toast.LENGTH_SHORT).show();
             }
@@ -127,8 +148,10 @@ public class MainActivity extends Activity{
     }
 
     private void stopRecording(){
-        Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
-        mContext.stopService(bindIndent);
+        if (isServiceRunning()){
+            Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
+            mContext.stopService(bindIndent);
+        }
         wakeLock.release();
     }
 
@@ -139,6 +162,7 @@ public class MainActivity extends Activity{
     @Override
     protected void onPause() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        mSoundPool.release();
         super.onPause();
     }
 
@@ -146,4 +170,24 @@ public class MainActivity extends Activity{
         //TODO Check whether App has root permission.
         return true;
     }
+    
+    public class GLCountDownTimer extends CountDownTimer{
+        
+        public GLCountDownTimer(long millisInFuture, long countDownInterval){
+            super(millisInFuture, countDownInterval);
+        }
+        
+        @Override
+        public void onFinish(){
+            mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 1.0f);
+            stopRecording();
+        }
+        
+        @Override
+        public void onTick(long millisUntifFinished){
+            Log.v("memo","timer_interval");
+        }
+
+    }
+
 }

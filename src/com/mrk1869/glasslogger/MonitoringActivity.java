@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.R.integer;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -38,6 +40,7 @@ public class MonitoringActivity extends Activity{
     private TextView blinkCountTextView;
     private SoundPool mSoundPool;
     private int mSoundID;
+    private boolean preferences_make_a_sound;
 
     private class GraphView extends View implements SensorEventListener{
 
@@ -154,6 +157,9 @@ public class MonitoringActivity extends Activity{
         blinkCount = 0;
         blinkCountTextView = (TextView)findViewById(R.id.countLabel);
         blinkCountTextView.setText(String.valueOf(blinkCount));
+        
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences_make_a_sound = sharedPreferences.getBoolean("sound", true);
     }
 
     @Override
@@ -215,8 +221,9 @@ public class MonitoringActivity extends Activity{
                                 Long blinkTimestamp = System.currentTimeMillis();
                                 if (blinkTimestamp > lastBlinkTimestamp + 500){
                                     blinkCount += 1;
-                                    mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
-                                    Log.v("Monitoring Activity", "Blinked"+blinkTimestamp);
+                                    if (preferences_make_a_sound){
+                                        mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 2.0f);
+                                    }
                                 }
                                 lastBlinkTimestamp = blinkTimestamp;
                             }

@@ -3,4 +3,5 @@
     <item android:id="@+id/start_recording" android:title="Start Recording"></item>
     <item android:id="@+id/stop_recording" android:title="Stop Recording"></item>
     <item android:id="@+id/monitoring" android:title="Monitoring"></item>
+    <item android:id="@+id/preferences" android:title="Preferences"></item>
 </menu>

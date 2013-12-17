@@ -29,6 +29,10 @@
             android:name="com.mrk1869.glasslogger.MonitoringActivity"
             android:label="@string/app_name">
         </activity>
+        <activity 
+            android:name="com.mrk1869.glasslogger.PreferencesActivity"
+            android:label="@string/app_name">
+        </activity>
         
         <service android:name="LoggerService" />
     </application>

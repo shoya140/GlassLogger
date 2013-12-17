@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory android:title="Preference">
+
+		<CheckBoxPreference android:key="sound"
+			android:title="Make a sound"
+			android:summary="Make a sound when user blinks"
+			android:defaultValue="true" />
+		<CheckBoxPreference android:key="timer"
+			android:title="5 min timer"
+			android:summary="Stop recording after 5 minnutes"
+			android:defaultValue="false" />
+
+	</PreferenceCategory>
+</PreferenceScreen>
