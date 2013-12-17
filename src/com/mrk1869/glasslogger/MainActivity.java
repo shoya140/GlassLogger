@@ -135,8 +135,7 @@ public class MainActivity extends Activity{
                 Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
                 mContext.startService(bindIndent);
                 if (preferences_timer){
-//                    mTimer = new GLCountDownTimer(300000, 0);
-                    mTimer = new GLCountDownTimer(310000, 310000);
+                    mTimer = new GLCountDownTimer(310000, 60000);
                     mTimer.start();
                 }
             }else{
