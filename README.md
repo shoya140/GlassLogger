@@ -9,7 +9,7 @@ the sensor logging app on Google Glass
 
 * Recording raw infrared sensor data -> /sdcard/GlassLogger/\_TIMESTAMP\_ir.txt
 * Monitoring and visualizing infrared sensor data.
-* Blink detection (making a sound if user blinks and counting blinks).
+* Blink detection (counting up and making a sound if user blinks).
 
 ## Installation
 
