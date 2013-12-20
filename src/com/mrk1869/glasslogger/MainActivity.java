@@ -168,9 +168,12 @@ public class MainActivity extends Activity{
     private final Runnable finihsedrecordingTimer = new Runnable() {
         @Override
         public void run() {
-            // TODO Auto-generated method stub
             mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 1.0f);
-            stopRecording();
+            try {
+                Thread.sleep(1000);
+                stopRecording();
+            } catch (InterruptedException e) {
+            }
         }
     };
 
