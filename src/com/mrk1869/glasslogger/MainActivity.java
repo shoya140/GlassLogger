@@ -1,17 +1,13 @@
 package com.mrk1869.glasslogger;
 
-import java.util.Timer;
-
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,9 +32,9 @@ public class MainActivity extends Activity{
     private WakeLock wakeLock;
     private PowerManager powerManager;
     private boolean preferences_timer;
-    private GLCountDownTimer mTimer;
     private SoundPool mSoundPool;
     private int mSoundID;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,14 +45,13 @@ public class MainActivity extends Activity{
         layout.addView(backgroundView);
         backgroundView.setBackgroundColor(0xff000000);
         mContext = getBaseContext();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences_timer = sharedPreferences.getBoolean("timer", true);
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        // SE
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences_timer = sharedPreferences.getBoolean("timer", false);
         mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         mSoundID = mSoundPool.load(getApplicationContext(), R.raw.finished, 0);
         openOptionsMenu();
@@ -135,8 +130,8 @@ public class MainActivity extends Activity{
                 Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
                 mContext.startService(bindIndent);
                 if (preferences_timer){
-                    mTimer = new GLCountDownTimer(310000, 60000);
-                    mTimer.start();
+                    mHandler = new Handler();
+                    mHandler.postDelayed(finihsedrecordingTimer, 310000);
                 }
             }else{
                 Toast.makeText(getBaseContext(), "Error: Storage does not have enough space.", Toast.LENGTH_SHORT).show();
@@ -150,8 +145,8 @@ public class MainActivity extends Activity{
         if (isServiceRunning()){
             Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
             mContext.stopService(bindIndent);
+            wakeLock.release();
         }
-        wakeLock.release();
     }
 
     private boolean isServiceRunning(){
@@ -170,23 +165,13 @@ public class MainActivity extends Activity{
         return true;
     }
     
-    public class GLCountDownTimer extends CountDownTimer{
-        
-        public GLCountDownTimer(long millisInFuture, long countDownInterval){
-            super(millisInFuture, countDownInterval);
-        }
-        
+    private final Runnable finihsedrecordingTimer = new Runnable() {
         @Override
-        public void onFinish(){
+        public void run() {
+            // TODO Auto-generated method stub
             mSoundPool.play(mSoundID, 1.0f, 1.0f, 0, 0, 1.0f);
             stopRecording();
         }
-        
-        @Override
-        public void onTick(long millisUntifFinished){
-            Log.v("memo","timer_interval");
-        }
-
-    }
+    };
 
 }
