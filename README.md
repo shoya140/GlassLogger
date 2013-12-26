@@ -33,7 +33,7 @@ $adb root
 
 You can download boot.img from [here]("https://developers.google.com/glass/downloads/system")
 
-### 3.Change permissions of /sys/... raw sensor data file.
+### 3.Change the permission of /sys/... raw sensor data file.
 
 <pre>
 $adb shell
