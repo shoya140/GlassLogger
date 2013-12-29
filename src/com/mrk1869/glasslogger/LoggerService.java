@@ -66,6 +66,14 @@ public class LoggerService extends Service implements SensorEventListener{
 
         File logSessionDirectoryPath = new File(Environment.getExternalStorageDirectory()
                 + "/GlassLogger/" + logSessionIdentifier);
+        
+        try {
+            logSessionDirectoryPath.mkdirs();
+        } catch (Exception e) {// Catch exception if any
+            Log.e(this.getClass().getSimpleName(), "Error: " + e.getMessage());
+
+            // TODO
+        }
 
         String logSessionFilePath = logSessionDirectoryPath.getAbsolutePath();
         
