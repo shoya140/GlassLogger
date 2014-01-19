@@ -9,8 +9,8 @@
 			android:summary="Make a sound when user blinks"
 			android:defaultValue="true" />
 		<CheckBoxPreference android:key="timer"
-			android:title="5 min timer"
-			android:summary="Stop recording after 5 minnutes"
+			android:title="10 min timer"
+			android:summary="Stop recording after 10 minnutes"
 			android:defaultValue="false" />
 
 	</PreferenceCategory>
