@@ -64,18 +64,15 @@ public class LoggerService extends Service implements SensorEventListener{
                 + now.get(GregorianCalendar.SECOND) + "-"
                 + now.get(GregorianCalendar.MILLISECOND);
 
-        File logSessionDirectoryPath = new File(Environment.getExternalStorageDirectory()
-                + "/GlassLogger/" + logSessionIdentifier);
+        File logSessionDirectoryPath = new File(Environment.getExternalStorageDirectory() + "/GlassLogger/");
         
         try {
             logSessionDirectoryPath.mkdirs();
         } catch (Exception e) {// Catch exception if any
             Log.e(this.getClass().getSimpleName(), "Error: " + e.getMessage());
-
-            // TODO
         }
 
-        String logSessionFilePath = logSessionDirectoryPath.getAbsolutePath();
+        String logSessionFilePath = Environment.getExternalStorageDirectory() + "/GlassLogger/" + logSessionIdentifier;
         
         // accelerometer
         accLogFileWriter = new LogFileWriter(logSessionFilePath+"_acc.txt");
