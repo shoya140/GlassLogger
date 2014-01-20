@@ -41,6 +41,7 @@ public class MonitoringActivity extends Activity{
     private SoundPool mSoundPool;
     private int mSoundID;
     private boolean preferences_make_a_sound;
+    private Float irTHRESTOLD;
 
     private class GraphView extends View implements SensorEventListener{
 
@@ -160,6 +161,10 @@ public class MonitoringActivity extends Activity{
         
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences_make_a_sound = sharedPreferences.getBoolean("sound", true);
+        irTHRESTOLD = sharedPreferences.getFloat("threshold", 4.0f);
+        
+        TextView thresholdTextView = (TextView)findViewById(R.id.thresholdLabel);
+        thresholdTextView.setText("threshold: " + String.valueOf(irTHRESTOLD));
     }
 
     @Override
@@ -179,7 +184,6 @@ public class MonitoringActivity extends Activity{
                 ArrayList<Float> irValues = new ArrayList<Float>();
 //                int FRAME = 3; // frame for peak detection |<--FRAME-->*peak*<--FRAME-->|
 //                int RANGE = 2; // RANGE = 2 #|<--RANGE-->*FRAME*<--RANGE-->|
-                Float irTHRESTOLD = 4.0f;
                 Long lastBlinkTimestamp = System.currentTimeMillis();
                 while (isRunning) {
                     try {

@@ -9,16 +9,16 @@
     tools:context=".MonitoringActivity" >
 
     <TextView
-        android:id="@+id/countLabel"
+        android:id="@+id/timingLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="0dp"
-        android:gravity="right"
-        android:text="10"
-        android:textSize="80sp" />
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="20dp"
+        android:gravity="left"
+        android:text=".  .  .  ;)"
+        android:textSize="120sp" />
     
     <TextView
         android:id="@+id/thresholdLabel"

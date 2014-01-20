@@ -31,10 +31,10 @@ public class MainActivity extends Activity{
     
     private WakeLock wakeLock;
     private PowerManager powerManager;
-    private boolean preferences_timer;
     private SoundPool mSoundPool;
     private int mSoundID;
     private Handler mHandler;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +50,7 @@ public class MainActivity extends Activity{
     @Override
     protected void onResume(){
         super.onResume();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences_timer = sharedPreferences.getBoolean("timer", false);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         mSoundID = mSoundPool.load(getApplicationContext(), R.raw.finished, 0);
         openOptionsMenu();
@@ -94,6 +93,14 @@ public class MainActivity extends Activity{
             startActivity(new Intent(MainActivity.this, MonitoringActivity.class));
             mJustSelected = false;
             return false;
+        case R.id.calibration:
+            startActivity(new Intent(MainActivity.this, CalibrationActivity.class));
+            mJustSelected = false;
+            return false;
+        case R.id.clear_calibration:
+            clearCalibration();
+            mJustSelected = true;
+            return false;
         case R.id.preferences:
             startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
             mJustSelected = false;
@@ -117,7 +124,7 @@ public class MainActivity extends Activity{
         } else {
             // User dismissed so back out completely
             // FIXME: right now, calling finish here doesn't seem to let us re-enable the receiver
-            finish();
+            //finish();
         }
     }
 
@@ -129,7 +136,7 @@ public class MainActivity extends Activity{
                 wakeLock.acquire();
                 Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
                 mContext.startService(bindIndent);
-                if (preferences_timer){
+                if (sharedPreferences.getBoolean("timer", false)){
                     mHandler = new Handler();
                     mHandler.postDelayed(finihsedrecordingTimer, 310000);
                 }
@@ -158,6 +165,12 @@ public class MainActivity extends Activity{
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mSoundPool.release();
         super.onPause();
+    }
+    
+    private void clearCalibration(){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat("threshold", 4.0f);
+        editor.commit();
     }
 
     private boolean isInstallationFinished(){

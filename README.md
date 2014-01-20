@@ -1,14 +1,14 @@
 GlassLogger
 ===========
 
-the sensor logging app on Google Glass
+The Sensor Logging App on Google Glass
 
 ![screen shot](/ss/blink_counter.png)
 
 ## Features
 
-* Recording infrared proximity sensor data -> /sdcard/GlassLogger/\_TIMESTAMP\_ir.txt
-* Monitoring and visualizing infrared sensor data.
+* Recording built-in sensor data -> /sdcard/GlassLogger/\_TIMESTAMP\_SENSORNAME.txt
+* Monitoring and visualizing infrared proximity sensor.
 * Blink detection (counting up and making a sound if user blinks).
 
 ## Installation
@@ -31,7 +31,7 @@ $fastboot reboot
 $adb root
 </pre>
 
-You can download boot.img from [here]("https://developers.google.com/glass/downloads/system")
+You can download boot.img from [here](https://developers.google.com/glass/downloads/system)
 
 ### 3.Change the permission of /sys/... raw sensor data file.
 
