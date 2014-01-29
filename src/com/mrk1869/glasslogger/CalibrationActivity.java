@@ -124,7 +124,7 @@ public class CalibrationActivity extends Activity {
                         dValues.add(0.0f);
                         continue;
                     }
-                    if (left > peak && peak > left) {
+                    if (left > peak && peak > right) {
                         dValues.add(0.0f);
                         continue;
                     }
@@ -147,7 +147,7 @@ public class CalibrationActivity extends Activity {
                 }
 
                 float maxFmeasure = 0.0f;
-                float maxThreshold = 3.0f;
+                ArrayList<Float> thresholds = new ArrayList<Float>();
 
                 // Step3. peak detection and evaluation
                 for (float threshold = 3.0f; threshold < 7.0f; threshold += 0.1) {
@@ -211,8 +211,7 @@ public class CalibrationActivity extends Activity {
 
                         endTime += windowSize;
                     }
-                    if (truePositive > 0.0 && falsePositive > 0.0
-                            && falseNegative > 0.0) {
+                    if (truePositive + falsePositive > 0.0 && truePositive + falseNegative > 0) {
 
                         float precision = truePositive
                                 / (truePositive + falsePositive);
@@ -223,16 +222,24 @@ public class CalibrationActivity extends Activity {
 
                         if (fMeasure > maxFmeasure) {
                             maxFmeasure = fMeasure;
-                            maxThreshold = threshold;
+                            thresholds.clear();
+                            thresholds.add(threshold);
+                        }else if (fMeasure == maxFmeasure) {
+                            thresholds.add(threshold);
                         }
                     }
+                    Log.v("Monitoring Activity", "ir-progress threshold:"+threshold + "tp:"+truePositive+" fp:"+falsePositive+" fn:"+falseNegative+" tn:"+trueNegative);
                 }
-                float threshold = (float) ((Math.round(maxThreshold * 10))/10.0);
+                float threshold = 0.0f;
+                for (Float fValue : thresholds) {
+                    threshold += fValue;
+                }
+                threshold = (float) ((Math.round((threshold/thresholds.size()) * 10))/10.0);
                 SharedPreferences.Editor edit = mSharedPreferences.edit();
                 edit.putFloat("threshold",threshold);
                 edit.commit();
                 Log.v("Monitoring Activity", "ir-finished threshold:"
-                        + maxThreshold + "fMeasure:" + maxFmeasure);
+                        + threshold + "fMeasure:" + maxFmeasure);
                 mThread.interrupt();
                 finish();
             }

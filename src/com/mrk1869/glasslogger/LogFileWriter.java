@@ -50,6 +50,11 @@ public class LogFileWriter {
         this.writeString(logString);
     }
     
+    public void writeLightSensorData(Long timestamp, float value){
+        String logString = timestamp + "\t" + value + "\n";
+        this.writeString(logString);
+    }
+    
     public void writeIRSensorData(Long timestamp, float value){
         String logString = timestamp + "\t" + value + "\n";
         this.writeString(logString);

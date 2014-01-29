@@ -182,8 +182,6 @@ public class MonitoringActivity extends Activity{
                 
                 // peak detection
                 ArrayList<Float> irValues = new ArrayList<Float>();
-//                int FRAME = 3; // frame for peak detection |<--FRAME-->*peak*<--FRAME-->|
-//                int RANGE = 2; // RANGE = 2 #|<--RANGE-->*FRAME*<--RANGE-->|
                 Long lastBlinkTimestamp = System.currentTimeMillis();
                 while (isRunning) {
                     try {
@@ -196,19 +194,19 @@ public class MonitoringActivity extends Activity{
                             
                             // peak detection
                             irValues.add(irValue);
-                            if (irValues.size() < 10) {
+                            if (irValues.size() < 8) {
                                 continue;
                             }
                             irValues.remove(0);
                             
-                            Float left = (irValues.get(0)+irValues.get(1)+irValues.get(2)+irValues.get(3))/4.0f;
-                            Float right = (irValues.get(5)+irValues.get(6)+irValues.get(7)+irValues.get(8))/4.0f;
-                            Float peak = irValues.get(4);
+                            Float left = (irValues.get(0)+irValues.get(1)+irValues.get(2))/3.0f;
+                            Float right = (irValues.get(4)+irValues.get(5)+irValues.get(6))/3.0f;
+                            Float peak = irValues.get(3);
                             
                             if (left < peak && peak < right){
                                 continue;
                             }
-                            if (left > peak && peak > left){
+                            if (left > peak && peak > right){
                                 continue;
                             }
                             

@@ -33,6 +33,9 @@ public class LoggerService extends Service implements SensorEventListener{
 
     private Sensor gsSensor;
     private LogFileWriter gyroLogFileWriter;
+    
+    private Sensor liSensor;
+    private LogFileWriter lightSensorLogFileWriter;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -90,7 +93,12 @@ public class LoggerService extends Service implements SensorEventListener{
         gsSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE).get(0);
         sensorManager.registerListener(this, gsSensor, SensorManager.SENSOR_DELAY_FASTEST);
         
-        // IR sensor
+        // light sensor
+        lightSensorLogFileWriter = new LogFileWriter(logSessionFilePath+"_light.txt");
+        liSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_LIGHT).get(0);
+        sensorManager.registerListener(this, liSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        
+        // proximity sensor
         irLogFileWriter = new LogFileWriter(logSessionFilePath+"_ir.txt");
         mIRSensorLogger = new IRSensorLogger();        
         irThread = new Thread(){
@@ -155,6 +163,13 @@ public class LoggerService extends Service implements SensorEventListener{
                     event.values[2]
                             );            
             break;
+            
+        case Sensor.TYPE_LIGHT:
+            lightSensorLogFileWriter.writeLightSensorData(
+                    timestamp, 
+                    event.values[0]
+                            );            
+            break;
 
         default:
             break;
@@ -168,6 +183,7 @@ public class LoggerService extends Service implements SensorEventListener{
         rotationLogFileWriter.closeWriter();
         quaternionLogFileWriter.closeWriter();
         gyroLogFileWriter.closeWriter();
+        lightSensorLogFileWriter.closeWriter();
         irLogFileWriter.closeWriter();
         
         //Stop logging
