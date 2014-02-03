@@ -114,10 +114,10 @@ public class CalibrationActivity extends Activity {
                         continue;
                     }
 
-                    Float left = (irValues.get(i - 4) + irValues.get(i - 3) + irValues
-                            .get(i - 2)) / 3.0f;
-                    Float right = (irValues.get(i + 2) + irValues.get(i + 3) + irValues
-                            .get(i + 4)) / 3.0f;
+                    Float left = (irValues.get(i - 3) + irValues.get(i - 2) + irValues
+                            .get(i - 1)) / 3.0f;
+                    Float right = (irValues.get(i + 1) + irValues.get(i + 2) + irValues
+                            .get(i + 3)) / 3.0f;
                     Float peak = irValues.get(i);
 
                     if (left < peak && peak < right) {
