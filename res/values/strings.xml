@@ -3,6 +3,32 @@
 
     <string name="app_name">GlassLogger</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
 
+	<string name="preference_title_accelerometer">Accelerometer</string>
+	<string name="preference_summary_accelerometer">Enable or disable acceleration sensor logging</string>
+		
+	<string name="preference_title_gyroscope">Gyroscope</string>
+	<string name="preference_summary_gyroscope">Enable or disable gyroscope logging</string>
+	
+	<string name="preference_title_rotation_sensor">Rotation Vector</string>
+	<string name="preference_summary_rotation_sensor">Enable or disable rotation vector sensor logging</string>
+
+	<string name="preference_title_magnetic_sensor">Compass (3-axis)</string>
+	<string name="preference_summary_magnetic_sensor">Enable or disable magnetic sensor logging</string>
+		
+	<string name="preference_title_light_sensor">Light sensor</string>
+	<string name="preference_summary_light_sensor">Enable or disable light sensor logging.</string>
+
+	<string name="preference_title_proximity_sensor">Proximity sensor</string>
+	<string name="preference_summary_proximity_sensor">Enable or disable proximity sensor logging (root access is needed)</string>
+
+	<string name="preference_title_sound">Sound</string>
+	<string name="preference_summary_sound">Enable or disable privacy sound recording (every tenth sample recorded)</string>
+
+	<string name="preference_title_bluetooth">Bluetooth</string>
+	<string name="preference_summary_bluetooth">Enable or disable bluetooth logging</string>
+	
+	<string name="preference_title_wifi">Wifi access points</string>
+	<string name="preference_summary_wifi">Enable or disable logging of wifi access points in range</string>
+	
 </resources>

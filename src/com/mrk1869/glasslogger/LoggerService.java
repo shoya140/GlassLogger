@@ -5,12 +5,14 @@ import java.util.GregorianCalendar;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -36,6 +38,8 @@ public class LoggerService extends Service implements SensorEventListener{
     
     private Sensor liSensor;
     private LogFileWriter lightSensorLogFileWriter;
+    
+    private SharedPreferences sharedPreferences;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -45,6 +49,7 @@ public class LoggerService extends Service implements SensorEventListener{
     @Override
     public void onCreate() {
         super.onCreate();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sensorManager = (SensorManager)getApplicationContext().getSystemService(SENSOR_SERVICE);
     }
 
@@ -66,40 +71,49 @@ public class LoggerService extends Service implements SensorEventListener{
                 + now.get(GregorianCalendar.MINUTE) + "-"
                 + now.get(GregorianCalendar.SECOND) + "-"
                 + now.get(GregorianCalendar.MILLISECOND);
+        
+        String logSessionDirectoryPath = Environment.getExternalStorageDirectory() + "/GlassLogger/" + logSessionIdentifier + "/";
 
-        File logSessionDirectoryPath = new File(Environment.getExternalStorageDirectory() + "/GlassLogger/");
+        File logSessionDirectory = new File(logSessionDirectoryPath);
         
         try {
-            logSessionDirectoryPath.mkdirs();
+            logSessionDirectory.mkdirs();
         } catch (Exception e) {// Catch exception if any
             Log.e(this.getClass().getSimpleName(), "Error: " + e.getMessage());
         }
-
-        String logSessionFilePath = Environment.getExternalStorageDirectory() + "/GlassLogger/" + logSessionIdentifier;
         
         // accelerometer
-        accLogFileWriter = new LogFileWriter(logSessionFilePath+"_acc.txt");
-        accSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
-        sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        if (sharedPreferences.getBoolean("preference_accelerometer", false)) {
+            accLogFileWriter = new LogFileWriter(logSessionDirectoryPath+"acc.txt");
+            accSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+            sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        }
         
         // rotation vector
-        rotationLogFileWriter = new LogFileWriter(logSessionFilePath+"_rotation.txt");
-        quaternionLogFileWriter = new LogFileWriter(logSessionFilePath+"_quaternion.txt");
-        rvSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR).get(0);
-        sensorManager.registerListener(this, rvSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        if (sharedPreferences.getBoolean("preference_rotation", false)) {
+            rotationLogFileWriter = new LogFileWriter(logSessionDirectoryPath+"rotation.txt");
+            quaternionLogFileWriter = new LogFileWriter(logSessionDirectoryPath+"quaternion.txt");
+            rvSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR).get(0);
+            sensorManager.registerListener(this, rvSensor, SensorManager.SENSOR_DELAY_FASTEST);            
+        }
         
         // gyroscope
-        gyroLogFileWriter = new LogFileWriter(logSessionFilePath+"_gyro.txt");
+        if (sharedPreferences.getBoolean("preference_gyroscope", false)) {
+        gyroLogFileWriter = new LogFileWriter(logSessionDirectoryPath+"gyro.txt");
         gsSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE).get(0);
         sensorManager.registerListener(this, gsSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        }
         
         // light sensor
-        lightSensorLogFileWriter = new LogFileWriter(logSessionFilePath+"_light.txt");
+        if (sharedPreferences.getBoolean("preference_light_sensor", false)) {
+        lightSensorLogFileWriter = new LogFileWriter(logSessionDirectoryPath+"light.txt");
         liSensor = (Sensor)sensorManager.getSensorList(Sensor.TYPE_LIGHT).get(0);
         sensorManager.registerListener(this, liSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        }
         
         // proximity sensor
-        irLogFileWriter = new LogFileWriter(logSessionFilePath+"_ir.txt");
+        if (sharedPreferences.getBoolean("preference_proximity_sensor", false)) {
+        irLogFileWriter = new LogFileWriter(logSessionDirectoryPath+"proximity.txt");
         mIRSensorLogger = new IRSensorLogger();        
         irThread = new Thread(){
             public void run(){
@@ -119,6 +133,7 @@ public class LoggerService extends Service implements SensorEventListener{
             }
         };
         irThread.start();
+        }
     }
 
     @Override
@@ -178,19 +193,34 @@ public class LoggerService extends Service implements SensorEventListener{
 
     @Override
     public void onDestroy() {
-        // save
-        accLogFileWriter.closeWriter();
-        rotationLogFileWriter.closeWriter();
-        quaternionLogFileWriter.closeWriter();
-        gyroLogFileWriter.closeWriter();
-        lightSensorLogFileWriter.closeWriter();
-        irLogFileWriter.closeWriter();
         
-        //Stop logging
+        //Stop logging        
         sensorManager.unregisterListener(this);
-        mIRSensorLogger = null;
         isLogging = false;
-        irThread.interrupt();        
+        
+        // save
+        if (accSensor != null) {
+            accLogFileWriter.closeWriter();
+            accSensor = null;
+        }
+        if (rvSensor != null) {
+            rotationLogFileWriter.closeWriter();            
+            quaternionLogFileWriter.closeWriter();
+            rvSensor = null;
+        }
+        if (gsSensor != null) {
+            gyroLogFileWriter.closeWriter();            
+            gsSensor = null;
+        }
+        if (liSensor != null) {
+            lightSensorLogFileWriter.closeWriter();            
+            liSensor = null;
+        }
+        if (mIRSensorLogger != null) {
+            irLogFileWriter.closeWriter();
+            irThread.interrupt();
+            mIRSensorLogger = null;
+        }
     }
     
 }

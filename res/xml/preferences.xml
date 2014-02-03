@@ -2,16 +2,54 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<PreferenceCategory android:title="Preference">
-
+	<PreferenceCategory android:title="Data Recoring">
+	    <CheckBoxPreference android:key="preference_accelerometer"
+			android:title="@string/preference_title_accelerometer"
+			android:summary="@string/preference_summary_accelerometer"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_gyroscope"
+			android:title="@string/preference_title_gyroscope"
+			android:summary="@string/preference_summary_gyroscope"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_rotation"
+			android:title="@string/preference_title_rotation_sensor"
+			android:summary="@string/preference_summary_rotation_sensor"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_magnetic_sensor"
+			android:title="@string/preference_title_magnetic_sensor"
+			android:summary="@string/preference_summary_magnetic_sensor"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_light_sensor"
+			android:title="@string/preference_title_light_sensor"
+			android:summary="@string/preference_summary_light_sensor"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_proximity_sensor"
+			android:title="@string/preference_title_proximity_sensor"
+			android:summary="@string/preference_summary_proximity_sensor"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_sound"
+			android:title="@string/preference_title_sound"
+			android:summary="@string/preference_summary_sound"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_bluetooth"
+			android:title="@string/preference_title_bluetooth"
+			android:summary="@string/preference_summary_bluetooth"
+			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_wifi"
+			android:title="@string/preference_title_wifi"
+			android:summary="@string/preference_summary_wifi"
+			android:defaultValue="true" />
+	</PreferenceCategory>
+	<PreferenceCategory android:title="Monitoring">
 		<CheckBoxPreference android:key="sound"
 			android:title="Make a sound"
 			android:summary="Make a sound when user blinks"
 			android:defaultValue="true" />
+	</PreferenceCategory>
+	<PreferenceCategory android:title="Experimental Settings">
 		<CheckBoxPreference android:key="timer"
 			android:title="10 min timer"
 			android:summary="Stop recording after 10 minnutes"
 			android:defaultValue="false" />
-
 	</PreferenceCategory>
 </PreferenceScreen>
