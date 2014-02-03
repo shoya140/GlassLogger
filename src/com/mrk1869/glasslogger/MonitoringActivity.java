@@ -2,7 +2,6 @@ package com.mrk1869.glasslogger;
 
 import java.util.ArrayList;
 
-import android.R.integer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -36,6 +35,9 @@ public class MonitoringActivity extends Activity{
     private SensorManager sensorManager;
     private Sensor accSensor;
     private Float irValue;
+    private Float xAccValue;
+    private Float yAccValue;
+    private Float zAccValue;
     private int blinkCount;
     private TextView blinkCountTextView;
     private SoundPool mSoundPool;
@@ -130,13 +132,17 @@ public class MonitoringActivity extends Activity{
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // TODO Auto-generated method stub
         }
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            // TODO Auto-generated method stub
             updateView(irValue);
+            switch (event.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
+                xAccValue = event.values[0];
+                yAccValue = event.values[1];
+                zAccValue = event.values[2];
+            }
         }
 
     }
@@ -182,6 +188,9 @@ public class MonitoringActivity extends Activity{
                 
                 // peak detection
                 ArrayList<Float> irValues = new ArrayList<Float>();
+                ArrayList<Float> xAccValues = new ArrayList<Float>();
+                ArrayList<Float> yAccValues = new ArrayList<Float>();
+                ArrayList<Float> zAccValues = new ArrayList<Float>();
                 Long lastBlinkTimestamp = System.currentTimeMillis();
                 while (isRunning) {
                     try {
@@ -194,10 +203,48 @@ public class MonitoringActivity extends Activity{
                             
                             // peak detection
                             irValues.add(irValue);
+                            xAccValues.add(xAccValue);
+                            yAccValues.add(yAccValue);
+                            zAccValues.add(zAccValue);
                             if (irValues.size() < 8) {
                                 continue;
                             }
                             irValues.remove(0);
+                            xAccValues.remove(0);
+                            yAccValues.remove(0);
+                            zAccValues.remove(0);
+                            
+                            // skip peak detection while being in motion
+                            // TODO: refactoring! bad hack.
+                            float motionThreshold = 0.5f;
+                            float xAccAve = 0;
+                            float yAccAve = 0;
+                            float zAccAve = 0;
+                            for (int i = 0; i < irValues.size(); i++) {
+                                xAccAve += xAccValues.get(i);
+                                yAccAve += yAccValues.get(i);
+                                zAccAve += zAccValues.get(i);
+                            }
+                            xAccAve = xAccAve/(float)xAccValues.size();
+                            yAccAve = yAccAve/(float)yAccValues.size();
+                            zAccAve = zAccAve/(float)zAccValues.size();
+                            
+                            float xAccVar = 0;
+                            float yAccVar = 0;
+                            float zAccVar = 0;
+                            for (int i = 0; i < irValues.size(); i++) {
+                                xAccVar += Math.pow(Math.pow((xAccValues.get(i) - xAccAve),2.0),1.0/2.0);
+                                yAccVar += Math.pow(Math.pow((yAccValues.get(i) - yAccAve),2.0),1.0/2.0);
+                                zAccVar += Math.pow(Math.pow((zAccValues.get(i) - zAccAve),2.0),1.0/2.0);
+                            }
+                            xAccVar = xAccVar/(float)xAccValues.size();
+                            yAccVar = yAccVar/(float)yAccValues.size();
+                            zAccVar = zAccVar/(float)zAccValues.size();
+                            
+                            // Log.v("variance", "variance:"+(xAccVar+yAccVar+zAccVar/3.0));
+                            if ((xAccVar + yAccVar + zAccVar)/3.0 > motionThreshold) {
+                                continue;
+                            }
                             
                             Float left = (irValues.get(0)+irValues.get(1)+irValues.get(2))/3.0f;
                             Float right = (irValues.get(4)+irValues.get(5)+irValues.get(6))/3.0f;
