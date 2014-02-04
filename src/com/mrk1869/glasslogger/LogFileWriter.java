@@ -34,26 +34,31 @@ public class LogFileWriter {
     public void writeACCdata(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
+        logString = null;
     }
 
     public void writeRotationVectorData(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
+        logString = null;
     }
     
     public void writeQuaternionData(Long timestamp, float wVal, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + wVal +"\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
+        logString = null;
     }
     
     public void writeGyroscopeData(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
+        logString = null;
     }
     
     public void writeMagneticSensorData(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
         this.writeString(logString);
+        logString = null;
     }
     
     public void writeBluetoothData(Long timestamp, ArrayList<String> btDevices) {
@@ -63,16 +68,19 @@ public class LogFileWriter {
         }
         logString = logString + "\n";
         this.writeString(logString);
+        logString = null;
     }
     
     public void writeLightSensorData(Long timestamp, float value){
         String logString = timestamp + "\t" + value + "\n";
         this.writeString(logString);
+        logString = null;
     }
     
     public void writeIRSensorData(Long timestamp, float value){
         String logString = timestamp + "\t" + value + "\n";
         this.writeString(logString);
+        logString = null;
     }
 
     public void writeString(String logdata) {

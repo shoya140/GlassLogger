@@ -110,7 +110,7 @@ public class LoggerService extends Service implements SensorEventListener {
         }
 
         // rotation vector
-        if (sharedPreferences.getBoolean("preference_rotation", true)) {
+        if (sharedPreferences.getBoolean("preference_rotation", false)) {
             rotationLogFileWriter = new LogFileWriter(logSessionDirectoryPath
                     + "rotation.txt");
             quaternionLogFileWriter = new LogFileWriter(logSessionDirectoryPath
@@ -132,7 +132,7 @@ public class LoggerService extends Service implements SensorEventListener {
         }
 
         // light sensor
-        if (sharedPreferences.getBoolean("preference_light_sensor", true)) {
+        if (sharedPreferences.getBoolean("preference_light_sensor", false)) {
             lightSensorLogFileWriter = new LogFileWriter(
                     logSessionDirectoryPath + "light.txt");
             liSensor = (Sensor) sensorManager.getSensorList(Sensor.TYPE_LIGHT)
@@ -240,10 +240,10 @@ public class LoggerService extends Service implements SensorEventListener {
         case Sensor.TYPE_ROTATION_VECTOR:
             rotationLogFileWriter.writeRotationVectorData(timestamp,
                     event.values[0], event.values[1], event.values[2]);
-            float[] quaternion = new float[4];
-            SensorManager.getQuaternionFromVector(quaternion, event.values);
-            quaternionLogFileWriter.writeQuaternionData(timestamp,
-                    quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+//            float[] quaternion = new float[4];
+//            SensorManager.getQuaternionFromVector(quaternion, event.values);
+//            quaternionLogFileWriter.writeQuaternionData(timestamp,
+//                    quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
             break;
 
         case Sensor.TYPE_GYROSCOPE:

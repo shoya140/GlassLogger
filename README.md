@@ -7,7 +7,7 @@ The Sensor Logging App on Google Glass
 
 ## Features
 
-* Recording built-in sensor data -> /sdcard/GlassLogger/\_TIMESTAMP\_SENSORNAME.txt
+* Recording built-in sensor data -> /sdcard/GlassLogger/TIMESTAMP/SENSORNAME.txt
 * Monitoring and visualizing infrared proximity sensor.
 * Blink detection (counting up and making a sound if user blinks).
 
