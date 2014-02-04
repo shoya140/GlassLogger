@@ -4,16 +4,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.GregorianCalendar;
 
-import android.R.bool;
-import android.R.integer;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
-import android.graphics.Bitmap.CompressFormat;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -199,7 +194,7 @@ public class LoggerService extends Service implements SensorEventListener {
             if (data == null || mCamera == null) {
                 return;
             }
-            
+
             String imageDirectoryPath = logSessionDirectoryPath + "camera/";
             File imageDirectory = new File(imageDirectoryPath);
             if (!imageDirectory.exists()) {
@@ -207,7 +202,7 @@ public class LoggerService extends Service implements SensorEventListener {
                     imageDirectory.mkdirs();
                 } catch (Exception e) {
                     Log.e(this.getClass().getSimpleName(),
-                        "Error: " + e.getMessage());
+                            "Error: " + e.getMessage());
                 }
             }
 
@@ -240,10 +235,10 @@ public class LoggerService extends Service implements SensorEventListener {
         case Sensor.TYPE_ROTATION_VECTOR:
             rotationLogFileWriter.writeRotationVectorData(timestamp,
                     event.values[0], event.values[1], event.values[2]);
-//            float[] quaternion = new float[4];
-//            SensorManager.getQuaternionFromVector(quaternion, event.values);
-//            quaternionLogFileWriter.writeQuaternionData(timestamp,
-//                    quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+            float[] quaternion = new float[4];
+            SensorManager.getQuaternionFromVector(quaternion, event.values);
+            quaternionLogFileWriter.writeQuaternionData(timestamp,
+                    quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
             break;
 
         case Sensor.TYPE_GYROSCOPE:

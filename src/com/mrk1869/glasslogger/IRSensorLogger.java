@@ -13,21 +13,22 @@ public class IRSensorLogger{
             Process process = Runtime.getRuntime().exec("cat /sys/bus/i2c/devices/4-0035/proxraw");
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             int read;
-            char[] buffer = new char[256];
+            char[] buffer = new char[8];
             StringBuffer output = new StringBuffer();
             while ((read = reader.read(buffer)) > 0) {
                 output.append(buffer, 0, read);
             }
             reader.close();
-            process.waitFor();
-            return Float.valueOf(output.toString());
+            float value = Float.valueOf(output.toString());
+            process = null;
+            reader = null;
+            buffer = null;
+            output = null;
+            return value;
         }catch (IOException e){
             // permission error
             Log.v("IRSensor", "Permission error!");
             return -1.0f;
-        }catch (InterruptedException e) {
-            // finished sign
-            return -2.0f;
         }
     }
     

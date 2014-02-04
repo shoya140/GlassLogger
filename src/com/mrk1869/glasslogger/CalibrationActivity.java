@@ -1,6 +1,5 @@
 package com.mrk1869.glasslogger;
 
-import java.security.Timestamp;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -41,11 +40,12 @@ public class CalibrationActivity extends Activity {
                 R.layout.activity_calibration, null);
         addContentView(view, new LayoutParams(LayoutParams.FILL_PARENT,
                 LayoutParams.FILL_PARENT));
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(this);
         float threshold = mSharedPreferences.getFloat("threshold", 4.0f);
         thresholdTextView = (TextView) findViewById(R.id.thresholdLabel);
         thresholdTextView.setText("threshold: " + String.valueOf(threshold));
-        
+
         timingTextView = (TextView) findViewById(R.id.timingLabel);
         timingText = new String();
         timingText = "";
@@ -89,7 +89,7 @@ public class CalibrationActivity extends Activity {
                                 timingTextView.setText(timingText);
                                 timingText = "";
                             }
-                            });
+                        });
                     } else if (size % 15 == 0) {
                         mSoundPool.play(mSoundID1, 1.0f, 1.0f, 0, 0, 1.0f);
                         timingText = timingText + ".  ";
@@ -98,7 +98,7 @@ public class CalibrationActivity extends Activity {
                             public void run() {
                                 timingTextView.setText(timingText);
                             }
-                            });
+                        });
                     }
                     if (irValues.size() > 250) {
                         isRunning = false;
@@ -184,17 +184,16 @@ public class CalibrationActivity extends Activity {
                     long windowSize = 100;
                     // MEMO: skip first timing
                     long endTime = timestampValues.get(90);
-                    while (endTime < timestampValues.get(timestampValues.size()-1)) {
+                    while (endTime < timestampValues
+                            .get(timestampValues.size() - 1)) {
                         boolean isPeak = false;
                         boolean isLabel = false;
 
-                        while (labels.size() > 0
-                                && labels.get(0) < endTime) {
+                        while (labels.size() > 0 && labels.get(0) < endTime) {
                             isLabel = true;
                             labels.remove(0);
                         }
-                        while (peaks.size() > 0
-                                && peaks.get(0) < endTime) {
+                        while (peaks.size() > 0 && peaks.get(0) < endTime) {
                             isPeak = true;
                             peaks.remove(0);
                         }
@@ -211,7 +210,8 @@ public class CalibrationActivity extends Activity {
 
                         endTime += windowSize;
                     }
-                    if (truePositive + falsePositive > 0.0 && truePositive + falseNegative > 0) {
+                    if (truePositive + falsePositive > 0.0
+                            && truePositive + falseNegative > 0) {
 
                         float precision = truePositive
                                 / (truePositive + falsePositive);
@@ -224,19 +224,23 @@ public class CalibrationActivity extends Activity {
                             maxFmeasure = fMeasure;
                             thresholds.clear();
                             thresholds.add(threshold);
-                        }else if (fMeasure == maxFmeasure) {
+                        } else if (fMeasure == maxFmeasure) {
                             thresholds.add(threshold);
                         }
                     }
-                    Log.v("Monitoring Activity", "ir-progress threshold:"+threshold + "tp:"+truePositive+" fp:"+falsePositive+" fn:"+falseNegative+" tn:"+trueNegative);
+                    Log.v("Monitoring Activity", "ir-progress threshold:"
+                            + threshold + "tp:" + truePositive + " fp:"
+                            + falsePositive + " fn:" + falseNegative + " tn:"
+                            + trueNegative);
                 }
                 float threshold = 0.0f;
                 for (Float fValue : thresholds) {
                     threshold += fValue;
                 }
-                threshold = (float) ((Math.round((threshold/thresholds.size()) * 10))/10.0);
+                threshold = (float) ((Math
+                        .round((threshold / thresholds.size()) * 10)) / 10.0);
                 SharedPreferences.Editor edit = mSharedPreferences.edit();
-                edit.putFloat("threshold",threshold);
+                edit.putFloat("threshold", threshold);
                 edit.commit();
                 Log.v("Monitoring Activity", "ir-finished threshold:"
                         + threshold + "fMeasure:" + maxFmeasure);
@@ -244,7 +248,7 @@ public class CalibrationActivity extends Activity {
                 finish();
             }
         };
-        mHandler= new Handler();
+        mHandler = new Handler();
         mThread.start();
         isRunning = true;
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
