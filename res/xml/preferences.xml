@@ -39,6 +39,10 @@
 			android:title="@string/preference_title_wifi"
 			android:summary="@string/preference_summary_wifi"
 			android:defaultValue="true" />
+	    <CheckBoxPreference android:key="preference_camera"
+			android:title="@string/preference_title_camera"
+			android:summary="@string/preference_summary_camera"
+			android:defaultValue="true" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Monitoring">
 		<CheckBoxPreference android:key="sound"

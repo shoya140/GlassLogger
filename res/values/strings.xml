@@ -30,5 +30,8 @@
 	
 	<string name="preference_title_wifi">Wifi access points</string>
 	<string name="preference_summary_wifi">Enable or disable logging of wifi access points in range</string>
+
+	<string name="preference_title_camera">Camera</string>
+	<string name="preference_summary_camera">Enable or disable logging of taking pictures every 1 minute for groundtruth</string>
 	
 </resources>

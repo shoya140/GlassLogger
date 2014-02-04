@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import android.util.Log;
 
@@ -47,6 +48,20 @@ public class LogFileWriter {
     
     public void writeGyroscopeData(Long timestamp, float xVal, float yVal, float zVal) {
         String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
+    
+    public void writeMagneticSensorData(Long timestamp, float xVal, float yVal, float zVal) {
+        String logString = timestamp + "\t" + xVal + "\t" + yVal + "\t" + zVal + "\n";
+        this.writeString(logString);
+    }
+    
+    public void writeBluetoothData(Long timestamp, ArrayList<String> btDevices) {
+        String logString = timestamp.toString();
+        for (String device : btDevices) {
+            logString = logString + "\t" + device;
+        }
+        logString = logString + "\n";
         this.writeString(logString);
     }
     
