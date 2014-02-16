@@ -41,6 +41,9 @@ public class LoggerService extends Service implements SensorEventListener {
     private Sensor gsSensor;
     private LogFileWriter gyroLogFileWriter;
 
+    private Sensor mgSensor;
+    private LogFileWriter mgLogFileWriter;
+
     private Sensor liSensor;
     private LogFileWriter lightSensorLogFileWriter;
 
@@ -62,6 +65,18 @@ public class LoggerService extends Service implements SensorEventListener {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sensorManager = (SensorManager) getApplicationContext()
                 .getSystemService(SENSOR_SERVICE);
+
+        // camera
+        if (sharedPreferences.getBoolean("preference_camera", true)) {
+            mCamera = Camera.open();
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    3, 2, WindowManager.LayoutParams.TYPE_TOAST,
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    PixelFormat.TRANSLUCENT);
+            windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+            mCameraSurfaceView = new CameraSurfaceView(this, mCamera);
+            windowManager.addView(mCameraSurfaceView, params);
+        }
     }
 
     @Override
@@ -105,7 +120,7 @@ public class LoggerService extends Service implements SensorEventListener {
         }
 
         // rotation vector
-        if (sharedPreferences.getBoolean("preference_rotation", false)) {
+        if (sharedPreferences.getBoolean("preference_rotation", true)) {
             rotationLogFileWriter = new LogFileWriter(logSessionDirectoryPath
                     + "rotation.txt");
             quaternionLogFileWriter = new LogFileWriter(logSessionDirectoryPath
@@ -117,12 +132,22 @@ public class LoggerService extends Service implements SensorEventListener {
         }
 
         // gyroscope
-        if (sharedPreferences.getBoolean("preference_gyroscope", true)) {
+        if (sharedPreferences.getBoolean("preference_gyroscope", false)) {
             gyroLogFileWriter = new LogFileWriter(logSessionDirectoryPath
                     + "gyro.txt");
             gsSensor = (Sensor) sensorManager.getSensorList(
                     Sensor.TYPE_GYROSCOPE).get(0);
             sensorManager.registerListener(this, gsSensor,
+                    SensorManager.SENSOR_DELAY_FASTEST);
+        }
+
+        // magnetic sensor
+        if (sharedPreferences.getBoolean("preference_magnetic_sensor", false)) {
+            mgLogFileWriter = new LogFileWriter(logSessionDirectoryPath
+                    + "magnetic.txt");
+            mgSensor = (Sensor) sensorManager.getSensorList(
+                    Sensor.TYPE_MAGNETIC_FIELD).get(0);
+            sensorManager.registerListener(this, mgSensor,
                     SensorManager.SENSOR_DELAY_FASTEST);
         }
 
@@ -152,6 +177,7 @@ public class LoggerService extends Service implements SensorEventListener {
                                 // -2.0: thread has just stopped.
                                 irLogFileWriter.writeIRSensorData(
                                         System.currentTimeMillis(), logData);
+                                Log.v("logger", "shoya:ir-" + logData);
                             }
                         } catch (Exception e) {
                             Log.v("LoggerService", "IRLogger has some error..");
@@ -163,21 +189,13 @@ public class LoggerService extends Service implements SensorEventListener {
         }
 
         // camera
-        if (sharedPreferences.getBoolean("preference_camera", true)) {
-            mCamera = Camera.open();
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    3, 2, WindowManager.LayoutParams.TYPE_TOAST,
-                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                    PixelFormat.TRANSLUCENT);
-            windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-            mCameraSurfaceView = new CameraSurfaceView(this, mCamera);
-            windowManager.addView(mCameraSurfaceView, params);
+        if (sharedPreferences.getBoolean("preference_camera", false)) {
             mCamera.startPreview();
             cameraThread = new Thread() {
                 public void run() {
                     while (isLogging) {
                         try {
-                            Thread.sleep(60000);
+                            Thread.sleep(5000);
                             mCamera.takePicture(null, null, pictureCallback);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -216,6 +234,7 @@ public class LoggerService extends Service implements SensorEventListener {
             } catch (Exception e) {
             }
             fileOutputStream = null;
+            Log.v("logger", "shoya:take a pucture");
         }
     };
 
@@ -243,6 +262,11 @@ public class LoggerService extends Service implements SensorEventListener {
 
         case Sensor.TYPE_GYROSCOPE:
             gyroLogFileWriter.writeGyroscopeData(timestamp, event.values[0],
+                    event.values[1], event.values[2]);
+            break;
+
+        case Sensor.TYPE_MAGNETIC_FIELD:
+            mgLogFileWriter.writeMagneticSensorData(timestamp, event.values[0],
                     event.values[1], event.values[2]);
             break;
 
@@ -277,6 +301,10 @@ public class LoggerService extends Service implements SensorEventListener {
             gyroLogFileWriter.closeWriter();
             gsSensor = null;
         }
+        if (mgSensor != null) {
+            mgLogFileWriter.closeWriter();
+            mgSensor = null;
+        }
         if (liSensor != null) {
             lightSensorLogFileWriter.closeWriter();
             liSensor = null;
@@ -292,6 +320,7 @@ public class LoggerService extends Service implements SensorEventListener {
             mCamera.release();
             mCamera = null;
             windowManager.removeView(mCameraSurfaceView);
+            Log.v("logger", "shoya:camera-stopped");
         }
     }
 

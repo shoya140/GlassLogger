@@ -1,5 +1,9 @@
 package com.mrk1869.glasslogger;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -15,12 +19,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 
-public class MainActivity extends Activity{
+public class MainActivity extends Activity {
 
     private Context mContext;
     LoggerService serviceBinder;
@@ -28,7 +28,7 @@ public class MainActivity extends Activity{
 
     private boolean mJustSelected;
     private View backgroundView;
-    
+
     private WakeLock wakeLock;
     private PowerManager powerManager;
     private SoundPool mSoundPool;
@@ -41,30 +41,34 @@ public class MainActivity extends Activity{
         super.onCreate(savedInstanceState);
         LinearLayout layout = new LinearLayout(this);
         setContentView(layout);
-        backgroundView =  new View(this);
+        backgroundView = new View(this);
         layout.addView(backgroundView);
         backgroundView.setBackgroundColor(0xff000000);
         mContext = getBaseContext();
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         mSoundID = mSoundPool.load(getApplicationContext(), R.raw.finished, 0);
         openOptionsMenu();
+        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
+                "GlassLogger");
+        wakeLock.acquire();
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu){
+    public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem startMenuItem = (MenuItem)menu.findItem(R.id.start_recording);
-        MenuItem stopMenuItem = (MenuItem)menu.findItem(R.id.stop_recording);
+        MenuItem startMenuItem = (MenuItem) menu.findItem(R.id.start_recording);
+        MenuItem stopMenuItem = (MenuItem) menu.findItem(R.id.stop_recording);
         if (isServiceRunning()) {
             startMenuItem.setVisible(false);
             stopMenuItem.setVisible(true);
-        }else{
+        } else {
             startMenuItem.setVisible(true);
             stopMenuItem.setVisible(false);
         }
@@ -90,11 +94,13 @@ public class MainActivity extends Activity{
             mJustSelected = true;
             return false;
         case R.id.monitoring:
-            startActivity(new Intent(MainActivity.this, MonitoringActivity.class));
+            startActivity(new Intent(MainActivity.this,
+                    MonitoringActivity.class));
             mJustSelected = false;
             return false;
         case R.id.calibration:
-            startActivity(new Intent(MainActivity.this, CalibrationActivity.class));
+            startActivity(new Intent(MainActivity.this,
+                    CalibrationActivity.class));
             mJustSelected = false;
             return false;
         case R.id.clear_calibration:
@@ -102,7 +108,8 @@ public class MainActivity extends Activity{
             mJustSelected = true;
             return false;
         case R.id.preferences:
-            startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
+            startActivity(new Intent(MainActivity.this,
+                    PreferencesActivity.class));
             mJustSelected = false;
             return false;
         }
@@ -112,7 +119,7 @@ public class MainActivity extends Activity{
     @Override
     public void onOptionsMenuClosed(Menu menu) {
         if (mJustSelected) {
-            //FIXME: need to wait a bit
+            // FIXME: need to wait a bit
             Handler h = new Handler(Looper.getMainLooper());
             h.post(new Runnable() {
                 @Override
@@ -123,61 +130,65 @@ public class MainActivity extends Activity{
             mJustSelected = false;
         } else {
             // User dismissed so back out completely
-            // FIXME: right now, calling finish here doesn't seem to let us re-enable the receiver
-            //finish();
+            // FIXME: right now, calling finish here doesn't seem to let us
+            // re-enable the receiver
+            // finish();
         }
     }
 
-    private void startRecording(){
-        if(isInstallationFinished()){
-            if (android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED)) {
-                powerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
-                wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "GlassLogger");
-                wakeLock.acquire();
-                Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
+    private void startRecording() {
+        if (isInstallationFinished()) {
+            if (android.os.Environment.getExternalStorageState().equals(
+                    android.os.Environment.MEDIA_MOUNTED)) {
+                Intent bindIndent = new Intent(MainActivity.this,
+                        LoggerService.class);
                 mContext.startService(bindIndent);
-                if (sharedPreferences.getBoolean("timer", false)){
+                if (sharedPreferences.getBoolean("timer", false)) {
                     mHandler = new Handler();
                     mHandler.postDelayed(finihsedrecordingTimer, 310000);
                 }
-            }else{
-                Toast.makeText(getBaseContext(), "Error: Storage does not have enough space.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getBaseContext(),
+                        "Error: Storage does not have enough space.",
+                        Toast.LENGTH_SHORT).show();
             }
-        }else{
-            Toast.makeText(getBaseContext(), "Error: permission error.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getBaseContext(), "Error: permission error.",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void stopRecording(){
-        if (isServiceRunning()){
-            Intent bindIndent = new Intent(MainActivity.this, LoggerService.class);
+    private void stopRecording() {
+        if (isServiceRunning()) {
+            Intent bindIndent = new Intent(MainActivity.this,
+                    LoggerService.class);
             mContext.stopService(bindIndent);
-            wakeLock.release();
         }
     }
 
-    private boolean isServiceRunning(){
+    private boolean isServiceRunning() {
         return LoggerService.isLogging;
     }
-    
+
     @Override
     protected void onPause() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mSoundPool.release();
         super.onPause();
+        wakeLock.release();
     }
-    
-    private void clearCalibration(){
+
+    private void clearCalibration() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putFloat("threshold", 4.0f);
         editor.commit();
     }
 
-    private boolean isInstallationFinished(){
-        //TODO Check whether App has root permission.
+    private boolean isInstallationFinished() {
+        // TODO Check whether App has root permission.
         return true;
     }
-    
+
     private final Runnable finihsedrecordingTimer = new Runnable() {
         @Override
         public void run() {

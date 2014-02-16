@@ -18,12 +18,10 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MonitoringActivity extends Activity {
 
@@ -34,12 +32,13 @@ public class MonitoringActivity extends Activity {
 
     private SensorManager sensorManager;
     private Sensor accSensor;
-    private Float irValue;
-    private Float xAccValue;
-    private Float yAccValue;
-    private Float zAccValue;
+    private float irValue;
+    private float xAccValue;
+    private float yAccValue;
+    private float zAccValue;
     private int blinkCount;
     private TextView blinkCountTextView;
+    private TextView rawValueTextView;
     private SoundPool mSoundPool;
     private int mSoundID;
     private boolean preferences_make_a_sound;
@@ -101,10 +100,6 @@ public class MonitoringActivity extends Activity {
                     if (mLastX >= mMaxX) {
                         mLastX = 0;
                         defaultValue = irValue;
-                        Toast toast = Toast.makeText(getBaseContext(),
-                                String.valueOf(irValue), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.RIGHT, 0, 0);
-                        toast.show();
                         final Canvas cavas = mCanvas;
                         paint.setColor(0xFFAAAAAA);
                         cavas.drawColor(0xFF000000);
@@ -118,10 +113,12 @@ public class MonitoringActivity extends Activity {
             synchronized (this) {
                 if (mBitmap != null) {
                     blinkCountTextView.setText(String.valueOf(blinkCount));
+                    rawValueTextView.setText(String.valueOf((int) irValue));
                     final Canvas canvas = mCanvas;
                     final Paint paint = mPaint;
                     float newX = mLastX + mSpeed;
-                    final float v = mYOffset + (value - defaultValue) * mScale;
+                    final float v = mHeight
+                            - (mYOffset + (value - defaultValue) * mScale);
                     paint.setColor(mColors[0]);
                     canvas.drawLine(mLastX, mLastValue, newX, v, paint);
                     mLastValue = v;
@@ -168,6 +165,7 @@ public class MonitoringActivity extends Activity {
         blinkCount = 0;
         blinkCountTextView = (TextView) findViewById(R.id.countLabel);
         blinkCountTextView.setText(String.valueOf(blinkCount));
+        rawValueTextView = (TextView) findViewById(R.id.rawValueLabel);
 
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(this);
