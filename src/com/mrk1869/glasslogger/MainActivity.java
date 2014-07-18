@@ -46,6 +46,15 @@ public class MainActivity extends Activity {
         backgroundView.setBackgroundColor(0xff000000);
         mContext = getBaseContext();
     }
+    
+    private boolean isAttached = false;
+
+    @Override
+    public void onAttachedToWindow() {
+      super.onAttachedToWindow();
+      this.isAttached = true;
+      openOptionsMenu();
+    }
 
     @Override
     protected void onResume() {
@@ -53,7 +62,8 @@ public class MainActivity extends Activity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         mSoundID = mSoundPool.load(getApplicationContext(), R.raw.finished, 0);
-        openOptionsMenu();
+        if (this.isAttached)
+        	openOptionsMenu();
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
                 "GlassLogger");
