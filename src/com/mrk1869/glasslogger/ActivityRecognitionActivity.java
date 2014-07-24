@@ -159,7 +159,7 @@ public class ActivityRecognitionActivity extends Activity implements
 						blinkTextView.setText(String.format("blink: %.3f",
 								blinkFrequency));
 
-						if (blinkFrequency > 0.4 && accVar > 0.2) {
+						if (blinkFrequency > 0.4 && accVar > 0.3) {
 							if (activityStatus != 3) {
 								activityStatus = 3;
 								activityTextView.setText("Talking");
