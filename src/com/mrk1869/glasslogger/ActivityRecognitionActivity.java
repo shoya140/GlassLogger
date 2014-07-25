@@ -43,6 +43,8 @@ public class ActivityRecognitionActivity extends Activity implements
 	private TextView blinkTextView;
 	private SoundPool mSoundPool;
 	private int mSoundID;
+	private int mSoundIDTalking;
+	private int mSoundIDReading;
 	private boolean preferences_make_a_sound;
 
 	ArrayList<Float> mXAccValues = new ArrayList<Float>();
@@ -76,113 +78,6 @@ public class ActivityRecognitionActivity extends Activity implements
 		irTHRESTOLD = sharedPreferences.getFloat("threshold", 4.0f);
 		preferences_make_a_sound = sharedPreferences.getBoolean("sound", true);
 
-		// // SE
-		mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-		mSoundID = mSoundPool.load(getApplicationContext(), R.raw.chime, 0);
-		final int soundIDReading = mSoundPool.load(getApplicationContext(),
-				R.raw.reading, 0);
-		final int soundIDTalking = mSoundPool.load(getApplicationContext(),
-				R.raw.talking, 0);
-		;
-
-		mHandler = new Handler();
-		mTimer = new Timer();
-		mTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				// mHandlerを通じてUI Threadへ処理をキューイング
-				mHandler.post(new Runnable() {
-					public void run() {
-						Long now = System.currentTimeMillis();
-
-						ArrayList<Float> xAccValues = new ArrayList<Float>(
-								mXAccValues);
-						ArrayList<Float> yAccValues = new ArrayList<Float>(
-								mYAccValues);
-						ArrayList<Float> zAccValues = new ArrayList<Float>(
-								mZAccValues);
-						ArrayList<Long> accTimeStamps = new ArrayList<Long>(
-								mAccTimeStamps);
-						ArrayList<Long> blinkTimeStamps = new ArrayList<Long>(
-								mBlinkTimeStamps);
-
-						while (now - accTimeStamps.get(0) > WINDOW_SIZE) {
-							accTimeStamps.remove(0);
-							xAccValues.remove(0);
-							yAccValues.remove(0);
-							zAccValues.remove(0);
-						}
-						while (blinkTimeStamps.size() > 0
-								&& now - blinkTimeStamps.get(0) > WINDOW_SIZE) {
-							blinkTimeStamps.remove(0);
-						}
-
-						float xAccAve = 0;
-						float yAccAve = 0;
-						float zAccAve = 0;
-						for (float xAcc : xAccValues) {
-							xAccAve += xAcc;
-						}
-						for (float yAcc : yAccValues) {
-							yAccAve += yAcc;
-						}
-						for (float zAcc : zAccValues) {
-							zAccAve += zAcc;
-						}
-						xAccAve = xAccAve / (float) xAccValues.size();
-						yAccAve = yAccAve / (float) yAccValues.size();
-						zAccAve = zAccAve / (float) zAccValues.size();
-
-						float xAccVar = 0;
-						float yAccVar = 0;
-						float zAccVar = 0;
-						for (float xAcc : xAccValues) {
-							xAccVar += Math.pow(
-									Math.pow((xAcc - xAccAve), 2.0), 1.0 / 2.0);
-						}
-						for (float yAcc : yAccValues) {
-							yAccVar += Math.pow(
-									Math.pow((yAcc - yAccAve), 2.0), 1.0 / 2.0);
-						}
-						for (float zAcc : zAccValues) {
-							zAccVar += Math.pow(
-									Math.pow((zAcc - zAccAve), 2.0), 1.0 / 2.0);
-						}
-						xAccVar = xAccVar / (float) xAccValues.size();
-						yAccVar = yAccVar / (float) yAccValues.size();
-						zAccVar = zAccVar / (float) zAccValues.size();
-
-						float accVar = (float) ((xAccVar + yAccVar + zAccVar) / 3.0);
-						float blinkFrequency = (float) blinkTimeStamps.size()
-								/ (float) (WINDOW_SIZE / 1000);
-						accTextView.setText(String.format("acc.: %.3f", accVar));
-						blinkTextView.setText(String.format("blink: %.3f",
-								blinkFrequency));
-
-						if (blinkFrequency > 0.4 && accVar > 0.3) {
-							if (activityStatus != 3) {
-								activityStatus = 3;
-								activityTextView.setText("Talking");
-								mSoundPool.play(soundIDTalking, 1.0f, 1.0f, 0,
-										0, 1.0f);
-							}
-						} else if (blinkFrequency < 0.3 && accVar < 0.6) {
-							if (activityStatus != 2) {
-								activityStatus = 2;
-								activityTextView.setText("Reading");
-								mSoundPool.play(soundIDReading, 1.0f, 1.0f, 0,
-										0, 1.0f);
-							}
-						} else {
-							if (activityStatus != 1) {
-								activityStatus = 1;
-								activityTextView.setText("");
-							}
-						}
-					}
-				});
-			}
-		}, WINDOW_SIZE, UPDATE_INTERVAL);
 	}
 
 	@Override
@@ -191,6 +86,14 @@ public class ActivityRecognitionActivity extends Activity implements
 
 		sensorManager.registerListener(this, accSensor,
 				SensorManager.SENSOR_DELAY_FASTEST);
+
+		// // SE
+		mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+		mSoundID = mSoundPool.load(getApplicationContext(), R.raw.chime, 0);
+		mSoundIDReading = mSoundPool.load(getApplicationContext(),
+				R.raw.reading, 0);
+		mSoundIDTalking = mSoundPool.load(getApplicationContext(),
+				R.raw.talking, 0);
 
 		mThread = new Thread() {
 			@Override
@@ -282,6 +185,105 @@ public class ActivityRecognitionActivity extends Activity implements
 		mThread.start();
 		isRunning = true;
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+		mHandler = new Handler();
+		mTimer = new Timer();
+		mTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				// mHandlerを通じてUI Threadへ処理をキューイング
+				mHandler.post(new Runnable() {
+					public void run() {
+						Long now = System.currentTimeMillis();
+
+						ArrayList<Float> xAccValues = new ArrayList<Float>(
+								mXAccValues);
+						ArrayList<Float> yAccValues = new ArrayList<Float>(
+								mYAccValues);
+						ArrayList<Float> zAccValues = new ArrayList<Float>(
+								mZAccValues);
+						ArrayList<Long> accTimeStamps = new ArrayList<Long>(
+								mAccTimeStamps);
+						ArrayList<Long> blinkTimeStamps = new ArrayList<Long>(
+								mBlinkTimeStamps);
+
+						while (now - accTimeStamps.get(0) > WINDOW_SIZE) {
+							accTimeStamps.remove(0);
+							xAccValues.remove(0);
+							yAccValues.remove(0);
+							zAccValues.remove(0);
+						}
+						while (blinkTimeStamps.size() > 0
+								&& now - blinkTimeStamps.get(0) > WINDOW_SIZE) {
+							blinkTimeStamps.remove(0);
+						}
+
+						float xAccAve = 0;
+						float yAccAve = 0;
+						float zAccAve = 0;
+						for (float xAcc : xAccValues) {
+							xAccAve += xAcc;
+						}
+						for (float yAcc : yAccValues) {
+							yAccAve += yAcc;
+						}
+						for (float zAcc : zAccValues) {
+							zAccAve += zAcc;
+						}
+						xAccAve = xAccAve / (float) xAccValues.size();
+						yAccAve = yAccAve / (float) yAccValues.size();
+						zAccAve = zAccAve / (float) zAccValues.size();
+
+						float xAccVar = 0;
+						float yAccVar = 0;
+						float zAccVar = 0;
+						for (float xAcc : xAccValues) {
+							xAccVar += Math.pow(
+									Math.pow((xAcc - xAccAve), 2.0), 1.0 / 2.0);
+						}
+						for (float yAcc : yAccValues) {
+							yAccVar += Math.pow(
+									Math.pow((yAcc - yAccAve), 2.0), 1.0 / 2.0);
+						}
+						for (float zAcc : zAccValues) {
+							zAccVar += Math.pow(
+									Math.pow((zAcc - zAccAve), 2.0), 1.0 / 2.0);
+						}
+						xAccVar = xAccVar / (float) xAccValues.size();
+						yAccVar = yAccVar / (float) yAccValues.size();
+						zAccVar = zAccVar / (float) zAccValues.size();
+
+						float accVar = (float) ((xAccVar + yAccVar + zAccVar) / 3.0);
+						float blinkFrequency = (float) blinkTimeStamps.size()
+								/ (float) (WINDOW_SIZE / 1000);
+						accTextView.setText(String.format("acc.: %.3f", accVar));
+						blinkTextView.setText(String.format("blink: %.3f",
+								blinkFrequency));
+
+						if (blinkFrequency > 0.4 && accVar > 0.3) {
+							if (activityStatus != 3) {
+								activityStatus = 3;
+								activityTextView.setText("Talking");
+								mSoundPool.play(mSoundIDTalking, 1.0f, 1.0f, 0,
+										0, 1.0f);
+							}
+						} else if (blinkFrequency < 0.3 && accVar < 0.6) {
+							if (activityStatus != 2) {
+								activityStatus = 2;
+								activityTextView.setText("Reading");
+								mSoundPool.play(mSoundIDReading, 1.0f, 1.0f, 0,
+										0, 1.0f);
+							}
+						} else {
+							if (activityStatus != 1) {
+								activityStatus = 1;
+								activityTextView.setText("");
+							}
+						}
+					}
+				});
+			}
+		}, WINDOW_SIZE, UPDATE_INTERVAL);
 	}
 
 	@Override
@@ -289,15 +291,10 @@ public class ActivityRecognitionActivity extends Activity implements
 		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		isRunning = false;
 		mThread.interrupt();
-		super.onPause();
-	}
-
-	@Override
-	protected void onStop() {
 		sensorManager.unregisterListener(this);
 		mTimer.cancel();
 		mSoundPool.release();
-		super.onStop();
+		super.onPause();
 	}
 
 	@Override

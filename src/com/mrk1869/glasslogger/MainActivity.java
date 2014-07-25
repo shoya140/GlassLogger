@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.start_recording:
-			startRecording();
+			// startRecording();
 			mJustSelected = true;
 			return false;
 		case R.id.stop_recording:
